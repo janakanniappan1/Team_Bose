@@ -1,0 +1,402 @@
+// Campus Marketplace Mock Data
+
+export const CATEGORIES = [
+  { id: 'electronics', name: 'Electronics', icon: 'Laptop', count: 142, bg: '#EFF6FF', color: '#2563EB' },
+  { id: 'books', name: 'Books & Notes', icon: 'BookOpen', count: 289, bg: '#ECFDF5', color: '#10B981' },
+  { id: 'lab', name: 'Lab Equipment', icon: 'FlaskConical', count: 64, bg: '#FEF3C7', color: '#D97706' },
+  { id: 'furniture', name: 'Furniture', icon: 'Armchair', count: 98, bg: '#F3E8FF', color: '#8B5CF6' },
+  { id: 'cycles', name: 'Cycles & Transport', icon: 'Bike', count: 45, bg: '#FFE4E6', color: '#E11D48' },
+  { id: 'hostel', name: 'Hostel Essentials', icon: 'Home', count: 176, bg: '#E0F2FE', color: '#0284C7' },
+  { id: 'fashion', name: 'Fashion & Merch', icon: 'Shirt', count: 110, bg: '#FCE7F3', color: '#DB2777' },
+  { id: 'sports', name: 'Sports Gear', icon: 'Trophy', count: 83, bg: '#FEF9C3', color: '#CA8A04' },
+  { id: 'stationery', name: 'Stationery', icon: 'PenTool', count: 154, bg: '#F1F5F9', color: '#475569' },
+  { id: 'others', name: 'Others', icon: 'Grid', count: 52, bg: '#F3F4F6', color: '#6B7280' },
+];
+
+export const MOCK_PRODUCTS = [
+  {
+    id: 'prod-1',
+    title: 'Casio fx-991EX ClassWiz Engineering Scientific Calculator',
+    price: 950,
+    originalPrice: 1695,
+    category: 'electronics',
+    condition: 'Like New',
+    postedDate: '2 hours ago',
+    location: 'Hostel 4 (C-Block, Room 302)',
+    department: 'Computer Science',
+    sellerName: 'Ananya Sharma',
+    sellerDept: 'Computer Science & Engineering',
+    sellerYear: '3rd Year B.Tech',
+    sellerRating: 4.9,
+    sellerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 98765 43210',
+    sellerEmail: 'ananya.s@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1611125832047-1d7ad1e8e48b?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Barely used Casio scientific calculator, perfect for B.Tech semester exams & GATE preparation. Includes original hard case, solar backup working 100%, and quick reference card.',
+    negotiable: true,
+    featured: true,
+    popular: true,
+    recommended: true,
+    views: 128,
+    likes: 18,
+    badge: 'Popular'
+  },
+  {
+    id: 'prod-2',
+    title: 'Hero Sprint Next 24T Gear Cycle (Front Suspension)',
+    price: 3400,
+    originalPrice: 7500,
+    category: 'cycles',
+    condition: 'Good',
+    postedDate: '5 hours ago',
+    location: 'Main Gate Cycle Stand / Hostel 7',
+    department: 'Mechanical Engg',
+    sellerName: 'Rohan Verma',
+    sellerDept: 'Mechanical Engineering',
+    sellerYear: '4th Year Graduating',
+    sellerRating: 4.8,
+    sellerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 98123 45678',
+    sellerEmail: 'rohan.v@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Graduating senior selling sturdy campus cycle. Smooth 21-speed Shimano gears, dual disc brakes, new gel seat cover installed last month. Perfect for commuting between hostels and lecture halls.',
+    negotiable: true,
+    featured: true,
+    popular: true,
+    recommended: false,
+    views: 310,
+    likes: 42,
+    badge: 'Hot Deal'
+  },
+  {
+    id: 'prod-3',
+    title: 'Cormen (CLRS) Introduction to Algorithms - 3rd Edition',
+    price: 650,
+    originalPrice: 1499,
+    category: 'books',
+    condition: 'Like New',
+    postedDate: 'Yesterday',
+    location: 'Central Library / CS Block',
+    department: 'Computer Science',
+    sellerName: 'Priya Nair',
+    sellerDept: 'Information Technology',
+    sellerYear: 'M.Tech 1st Year',
+    sellerRating: 5.0,
+    sellerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 97654 32109',
+    sellerEmail: 'priya.n@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Essential textbook for Data Structures & Algorithms course. Crisp binding, zero pen marks or highlighter stains inside. Free hand-written algorithm revision notes included!',
+    negotiable: false,
+    featured: false,
+    popular: true,
+    recommended: true,
+    views: 89,
+    likes: 12,
+    badge: 'Recommended'
+  },
+  {
+    id: 'prod-4',
+    title: 'Compact 45L Hostel Mini Fridge (Godrej Direct Cool)',
+    price: 4800,
+    originalPrice: 9900,
+    category: 'hostel',
+    condition: 'Good',
+    postedDate: '1 day ago',
+    location: 'Hostel 9, Room 114',
+    department: 'Electrical Engg',
+    sellerName: 'Karthik Raja',
+    sellerDept: 'Electrical & Electronics',
+    sellerYear: '4th Year B.Tech',
+    sellerRating: 4.7,
+    sellerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 96543 21098',
+    sellerEmail: 'karthik.r@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Ideal for summer! Keeps milk, fruits, cold coffee & energy drinks freezing cold. Low noise, 5-star power rating. Selling because moving out of college campus after final exams.',
+    negotiable: true,
+    featured: true,
+    popular: false,
+    recommended: true,
+    views: 245,
+    likes: 31,
+    badge: 'Featured'
+  },
+  {
+    id: 'prod-5',
+    title: 'Ergonomic Mesh Study Chair with Lumbar Support',
+    price: 1800,
+    originalPrice: 4200,
+    category: 'furniture',
+    condition: 'Like New',
+    postedDate: '2 days ago',
+    location: 'Girls Hostel 2, Room 405',
+    department: 'Biotechnology',
+    sellerName: 'Sneha Patel',
+    sellerDept: 'Biotechnology',
+    sellerYear: '3rd Year B.Tech',
+    sellerRating: 4.9,
+    sellerAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 95432 10987',
+    sellerEmail: 'sneha.p@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1580481072645-022f9a6d1270?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'High-back breathing mesh desk chair. Pneumatic height adjustment, 360-degree silent swivel wheels. No squeaks or tears. Great for long night study sessions.',
+    negotiable: true,
+    featured: false,
+    popular: true,
+    recommended: false,
+    views: 160,
+    likes: 22,
+    badge: 'Comfort'
+  },
+  {
+    id: 'prod-6',
+    title: 'Chemistry Lab Coat + Borosilicate Safety Goggles Set',
+    price: 350,
+    originalPrice: 850,
+    category: 'lab',
+    condition: 'Brand New',
+    postedDate: '3 days ago',
+    location: 'Chemistry Lab Block / Hostel 1',
+    department: 'Chemical Engg',
+    sellerName: 'Devansh Gupta',
+    sellerDept: 'Chemical Engineering',
+    sellerYear: '2nd Year B.Tech',
+    sellerRating: 4.8,
+    sellerAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 94321 09876',
+    sellerEmail: 'devansh.g@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: '100% Cotton heavy-duty white lab coat (Size M) with anti-fog UV protective goggles. Mandatory requirement for 1st & 2nd year chemistry labs.',
+    negotiable: false,
+    featured: false,
+    popular: false,
+    recommended: true,
+    views: 95,
+    likes: 9,
+    badge: '1st Year Must-Have'
+  },
+  {
+    id: 'prod-7',
+    title: 'Yonex Muscle Power 29 Badminton Racket Pair + Bag',
+    price: 1200,
+    originalPrice: 2800,
+    category: 'sports',
+    condition: 'Good',
+    postedDate: '3 days ago',
+    location: 'Sports Complex / Indoor Badminton Court',
+    department: 'Civil Engg',
+    sellerName: 'Vikram Singh',
+    sellerDept: 'Civil Engineering',
+    sellerYear: '3rd Year B.Tech',
+    sellerRating: 4.6,
+    sellerAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 93210 98765',
+    sellerEmail: 'vikram.s@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: 'Set of 2 Yonex original graphite shaft badminton rackets strung with BG65 gutting at 24 lbs tension. Includes carrying case and 3 Mavis 350 shuttles.',
+    negotiable: true,
+    featured: true,
+    popular: true,
+    recommended: false,
+    views: 180,
+    likes: 27,
+    badge: 'Sports'
+  },
+  {
+    id: 'prod-8',
+    title: 'Mini Portable Desk LED Lamp with Rechargeable Battery',
+    price: 320,
+    originalPrice: 799,
+    category: 'hostel',
+    condition: 'Like New',
+    postedDate: '4 days ago',
+    location: 'Hostel 3, Room 108',
+    department: 'ECE',
+    sellerName: 'Meera Menon',
+    sellerDept: 'Electronics & Comm.',
+    sellerYear: '2nd Year B.Tech',
+    sellerRating: 4.9,
+    sellerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+    sellerPhone: '+91 92109 87654',
+    sellerEmail: 'meera.m@campus.edu',
+    images: [
+      'https://images.unsplash.com/photo-1534349762230-e0cadf78f5da?auto=format&fit=crop&w=800&q=80'
+    ],
+    description: '3 brightness color modes (warm, cool, white), touch sensor dimmer control, USB Type-C charging. Battery lasts up to 8 hours during hostel night electricity cut-offs.',
+    negotiable: false,
+    featured: false,
+    popular: false,
+    recommended: true,
+    views: 110,
+    likes: 14,
+    badge: 'Utility'
+  }
+];
+
+export const MOCK_USER = {
+  firstName: 'Jana',
+  lastName: 'K',
+  fullName: 'Jana K',
+  email: 'jana.k@campus.edu',
+  phone: '+91 98765 00112',
+  department: 'Computer Science & Engineering',
+  year: '3rd Year B.Tech',
+  role: 'Student',
+  gender: 'Male',
+  housing: 'Hostel Resident',
+  hostelBlock: 'Hostel 5, Room 212',
+  city: 'Campus Town',
+  joinedDate: 'August 2024',
+  rating: 4.95,
+  verified: true,
+  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80'
+};
+
+export const MOCK_NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    type: 'sold',
+    title: 'Item Sold Successfully! 🎉',
+    message: 'Your listing "Engineering Physics Notes" was marked as sold to Rahul V.',
+    time: '15 mins ago',
+    unread: true
+  },
+  {
+    id: 'notif-2',
+    type: 'message',
+    title: 'New Message from Rohan Verma',
+    message: '"Is the Hero Sprint Cycle still available for test ride today near Hostel 7?"',
+    time: '1 hour ago',
+    unread: true
+  },
+  {
+    id: 'notif-3',
+    type: 'price_drop',
+    title: 'Wishlist Price Drop Alert! 📉',
+    message: 'The price for "Casio Scientific Calculator" dropped from ₹1,100 to ₹950.',
+    time: '3 hours ago',
+    unread: false
+  },
+  {
+    id: 'notif-4',
+    type: 'recommendation',
+    title: 'New Similar Product Listed',
+    message: 'A seller in CS Department just posted "SanDisk 128GB Pendrive".',
+    time: 'Yesterday',
+    unread: false
+  }
+];
+
+export const MOCK_MESSAGES = [
+  {
+    id: 'chat-1',
+    sellerName: 'Ananya Sharma',
+    sellerDept: 'Computer Science & Engg',
+    sellerYear: '3rd Year B.Tech',
+    sellerHostel: 'Girls Hostel 2, Room 310',
+    sellerPhone: '+91 98765 43210',
+    sellerEmail: 'ananya.s@campus.edu',
+    sellerRating: 4.9,
+    sellerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+    itemTitle: 'Casio fx-991EX Calculator',
+    itemPrice: 950,
+    itemImage: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=250&q=80',
+    online: true,
+    lastMsgTime: '10:45 AM',
+    unreadCount: 1,
+    messages: [
+      { id: 'm1', sender: 'seller', text: 'Hi! Yes the calculator is available. Complete with cover.', time: '10:30 AM' },
+      { id: 'm2', sender: 'user', text: 'Great! Can we meet near CS Library around 4 PM today?', time: '10:40 AM' },
+      { id: 'm3', sender: 'seller', text: 'Sounds perfect! I will bring it along after my OS lab.', time: '10:45 AM' }
+    ]
+  },
+  {
+    id: 'chat-2',
+    sellerName: 'Rohan Verma',
+    sellerDept: 'Mechanical Engineering',
+    sellerYear: '4th Year B.Tech',
+    sellerHostel: 'Hostel 5, Room 204',
+    sellerPhone: '+91 98123 45678',
+    sellerEmail: 'rohan.v@campus.edu',
+    sellerRating: 4.8,
+    sellerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+    itemTitle: 'Hero Sprint 24T Cycle',
+    itemPrice: 3400,
+    itemImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=250&q=80',
+    online: false,
+    lastMsgTime: 'Yesterday',
+    unreadCount: 0,
+    messages: [
+      { id: 'm1', sender: 'user', text: 'Is the cycle price negotiable if I pick it up today?', time: 'Yesterday 5:20 PM' },
+      { id: 'm2', sender: 'seller', text: 'I can do ₹3,200 final. Chain and brakes are recently oiled.', time: 'Yesterday 6:15 PM' }
+    ]
+  },
+  {
+    id: 'chat-3',
+    sellerName: 'Priya Patel',
+    sellerDept: 'Electronics & Communication',
+    sellerYear: '2nd Year B.Tech',
+    sellerHostel: 'Girls Hostel 1, Room 105',
+    sellerPhone: '+91 97890 12345',
+    sellerEmail: 'priya.p@campus.edu',
+    sellerRating: 4.95,
+    sellerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+    itemTitle: 'CLRS Introduction to Algorithms (4th Ed)',
+    itemPrice: 650,
+    itemImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=250&q=80',
+    online: true,
+    lastMsgTime: '2 days ago',
+    unreadCount: 0,
+    messages: [
+      { id: 'm1', sender: 'seller', text: 'Hi, the algorithm textbook is crisp clean without highlighter marks.', time: '2 days ago' },
+      { id: 'm2', sender: 'user', text: 'Can I check it at SAC Canteen tomorrow?', time: '2 days ago' }
+    ]
+  }
+];
+
+export const DEPARTMENTS = [
+  'Computer Science & Engineering',
+  'Information Technology',
+  'Electronics & Communication (ECE)',
+  'Electrical & Electronics (EEE)',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Chemical Engineering',
+  'Biotechnology & Bio-Engg',
+  'Physics & Basic Sciences',
+  'School of Management (MBA)',
+  'College Staff & Faculty'
+];
+
+export const HOSTELS = [
+  'Hostel 1 (Boys)',
+  'Hostel 2 (Boys)',
+  'Hostel 3 (Boys)',
+  'Hostel 4 (Boys)',
+  'Hostel 5 (Boys)',
+  'Girls Hostel 1',
+  'Girls Hostel 2',
+  'Girls Hostel 3',
+  'PG & Staff Quarters',
+  'Day Scholar (Off-Campus)'
+];
