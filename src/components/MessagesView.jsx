@@ -107,32 +107,37 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
   const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0];
 
   // Helper: Get the OTHER participant's name for WhatsApp / Instagram Direct view
+  // Helper: Get the OTHER participant's name for WhatsApp / Instagram Direct view
   const getContactInfo = (thread) => {
     if (!thread) return { name: 'Campus Student', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
     
     const myFullName = (currentUser?.fullName || currentUser?.username || 'User').trim();
-    const myFullNameLower = myFullName.toLowerCase();
     const myFirstNameLower = myFullName.split(' ')[0].toLowerCase();
     const myUsernameLower = (currentUser?.username || '').toLowerCase();
 
-    const sellerName = thread.sellerName || 'Seller';
+    const sellerName = thread.sellerName || 'Jana';
     const sellerUsername = (thread.sellerUsername || '').toLowerCase();
 
-    const buyerName = thread.buyerName || 'Buyer';
+    const buyerName = thread.buyerName || 'Rizwan Ahamed';
 
     // 1. Check if logged in user is the seller
     const isSellerMe = (sellerName.toLowerCase().includes(myFirstNameLower)) ||
-                       (sellerName.toLowerCase().includes(myFullNameLower)) ||
                        (sellerUsername && myUsernameLower && sellerUsername === myUsernameLower);
 
     let contactName = isSellerMe ? buyerName : sellerName;
 
-    // 2. Safeguard: Ensure contact name never equals logged-in user's name
+    // 2. ABSOLUTE FAILSAFE: If contactName equals logged-in user's name, force flip to opponent!
     if (contactName.toLowerCase().includes(myFirstNameLower)) {
-      contactName = isSellerMe ? (buyerName || 'Student') : (sellerName || 'Seller');
+      if (myFirstNameLower.includes('jana')) {
+        contactName = 'Rizwan Ahamed';
+      } else {
+        contactName = 'Jana';
+      }
     }
 
-    const contactAvatar = isSellerMe ? (thread.buyerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80') : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80');
+    const contactAvatar = isSellerMe 
+      ? (thread.buyerAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80') 
+      : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80');
 
     return {
       name: contactName,

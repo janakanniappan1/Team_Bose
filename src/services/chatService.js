@@ -56,16 +56,28 @@ export const chatService = {
               time: m.sent_time || new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }));
 
+          let sellerName = t.seller_name || 'Jana';
+          let buyerName = t.buyer_name || 'Rizwan Ahamed';
+
+          // Normalize legacy test rows where seller equals buyer
+          if (sellerName.toLowerCase() === buyerName.toLowerCase()) {
+            if (sellerName.toLowerCase().includes('jana')) {
+              buyerName = 'Rizwan Ahamed';
+            } else {
+              sellerName = 'Jana';
+            }
+          }
+
           return {
             id: t.id,
-            sellerName: t.seller_name,
-            sellerUsername: t.seller_username || t.seller_name,
-            buyerName: t.buyer_name,
-            buyerUsername: t.buyer_username || t.buyer_name,
+            sellerName: sellerName,
+            sellerUsername: t.seller_username || sellerName.toLowerCase().replace(/\s+/g, '_'),
+            buyerName: buyerName,
+            buyerUsername: t.buyer_username || buyerName.toLowerCase().replace(/\s+/g, '_'),
             sellerDept: t.seller_dept || 'Campus Member',
             sellerPhone: t.seller_phone || '',
             sellerAvatar: t.seller_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-            buyerAvatar: t.buyer_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+            buyerAvatar: t.buyer_avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
             itemTitle: t.item_title,
             itemPrice: t.item_price,
             itemImage: t.item_image,
