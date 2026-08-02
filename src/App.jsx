@@ -186,23 +186,31 @@ export default function App() {
     navigateToView('search', { query: term, category });
   };
 
-  // Start Chat handler — flexible seller resolution & self-chat guard
+  // Start Chat handler — comprehensive seller resolution & self-chat guard
   const handleStartChat = async (product) => {
-    const myId = currentUser?.id || currentUser?.authId || currentUser?.username;
-    const sellerId = product?.sellerId || product?.seller_id || product?.sellerName || product?.seller_name || product?.username || product?.seller_username;
+    const userAuthId = String(currentUser?.authId || '').trim().toLowerCase();
+    const userId = String(currentUser?.id || '').trim().toLowerCase();
+    const userUsername = String(currentUser?.username || '').trim().toLowerCase();
+    const userFullName = String(currentUser?.full_name || currentUser?.fullName || '').trim().toLowerCase();
 
-    const cleanMyId = String(myId || '').trim().toLowerCase();
-    const cleanSellerId = String(sellerId || '').trim().toLowerCase();
-    const cleanUsername = String(currentUser?.username || '').trim().toLowerCase();
-    const cleanFullName = String(currentUser?.full_name || '').trim().toLowerCase();
+    const productSellerId = String(product?.sellerId || product?.seller_id || '').trim().toLowerCase();
+    const productSellerName = String(product?.sellerName || product?.seller_name || '').trim().toLowerCase();
+    const productSellerUsername = String(product?.username || product?.seller_username || '').trim().toLowerCase();
 
     // Self-chat guard
-    if (cleanMyId && cleanSellerId && (cleanMyId === cleanSellerId || (cleanUsername && cleanUsername === cleanSellerId) || (cleanFullName && cleanFullName === cleanSellerId))) {
+    const isSelfChat = (
+      (userAuthId && (userAuthId === productSellerId || userAuthId === productSellerName || userAuthId === productSellerUsername)) ||
+      (userId && (userId === productSellerId || userId === productSellerName || userId === productSellerUsername)) ||
+      (userUsername && (userUsername === productSellerId || userUsername === productSellerName || userUsername === productSellerUsername)) ||
+      (userFullName && (userFullName === productSellerId || userFullName === productSellerName || userFullName === productSellerUsername))
+    );
+
+    if (isSelfChat) {
       showToast('⚠️ This is your own listing. You cannot chat with yourself.', 'info');
       return;
     }
 
-    if (!myId) {
+    if (!userId && !userUsername) {
       showToast('Please log in to start a chat.', 'info');
       return;
     }

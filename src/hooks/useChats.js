@@ -24,12 +24,23 @@ export function useChats() {
     if (!buyerId) throw new Error('You must be logged in to start a chat.');
     if (!sellerId) throw new Error('Seller ID is missing from this product.');
 
-    const cleanBuyer = String(buyerId).trim().toLowerCase();
-    const cleanSeller = String(sellerId).trim().toLowerCase();
-    const cleanUsername = String(currentUser?.username || '').trim().toLowerCase();
-    const cleanFullName = String(currentUser?.full_name || '').trim().toLowerCase();
+    const userAuthId = String(currentUser?.authId || '').trim().toLowerCase();
+    const userId = String(currentUser?.id || '').trim().toLowerCase();
+    const userUsername = String(currentUser?.username || '').trim().toLowerCase();
+    const userFullName = String(currentUser?.full_name || currentUser?.fullName || '').trim().toLowerCase();
 
-    if (cleanBuyer === cleanSeller || (cleanUsername && cleanUsername === cleanSeller) || (cleanFullName && cleanFullName === cleanSeller)) {
+    const productSellerId = String(product?.sellerId || product?.seller_id || '').trim().toLowerCase();
+    const productSellerName = String(product?.sellerName || product?.seller_name || '').trim().toLowerCase();
+    const productSellerUsername = String(product?.username || product?.seller_username || '').trim().toLowerCase();
+
+    const isSelfChat = (
+      (userAuthId && (userAuthId === productSellerId || userAuthId === productSellerName || userAuthId === productSellerUsername)) ||
+      (userId && (userId === productSellerId || userId === productSellerName || userId === productSellerUsername)) ||
+      (userUsername && (userUsername === productSellerId || userUsername === productSellerName || userUsername === productSellerUsername)) ||
+      (userFullName && (userFullName === productSellerId || userFullName === productSellerName || userFullName === productSellerUsername))
+    );
+
+    if (isSelfChat) {
       throw new Error('This is your own listing! You cannot chat with yourself.');
     }
 
