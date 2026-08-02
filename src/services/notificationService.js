@@ -81,7 +81,14 @@ export const notificationService = {
   },
 
   addNotification: async (notif) => {
-    const targetUsername = notif.username || notif.targetUser || 'Jana K';
+    const targetUsername = notif.username || notif.targetUser || 'Campus Student';
+    const senderUsername = notif.senderUsername || notif.sender || '';
+
+    // GUARD: NEVER send a notification to the author of the message!
+    if (senderUsername && targetUsername.toLowerCase().trim() === senderUsername.toLowerCase().trim()) {
+      return null;
+    }
+
     const title = notif.title || 'New Message Received 💬';
     const message = notif.message || notif.desc || 'A buyer sent a new message regarding your listing.';
     const notifType = notif.type || 'message';

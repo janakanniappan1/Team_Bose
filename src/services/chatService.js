@@ -80,7 +80,7 @@ export const chatService = {
     try {
       // 1. Insert message into Supabase chat_messages table
       await productSupabase.from('chat_messages').insert([{
-        thread_id: (chatId.includes('-') && chatId.length > 30) || (chatId.length > 30) ? chatId : null,
+        thread_id: chatId,
         sender: 'user',
         sender_username: senderUsername,
         text: messageText,
@@ -88,20 +88,21 @@ export const chatService = {
       }]);
 
       // 2. Update last message time on thread
-      if (chatId.length > 30) {
-        await productSupabase
-          .from('chat_threads')
-          .update({ last_msg_time: 'Just now' })
-          .eq('id', chatId);
-      }
+      await productSupabase
+        .from('chat_threads')
+        .update({ last_msg_time: 'Just now' })
+        .eq('id', chatId);
 
-      // 3. Trigger live push notification for recipient user
-      await notificationService.addNotification({
-        username: recipientUsername || 'Campus User',
-        title: `New Message from ${senderUsername} 💬`,
-        message: `"${messageText.length > 60 ? messageText.substring(0, 60) + '...' : messageText}"`,
-        type: 'message'
-      });
+      // 3. Trigger live push notification for RECIPIENT user ONLY
+      if (recipientUsername && recipientUsername.toLowerCase().trim() !== senderUsername.toLowerCase().trim()) {
+        await notificationService.addNotification({
+          username: recipientUsername,
+          senderUsername: senderUsername,
+          title: `New Message from ${senderUsername} 💬`,
+          message: `"${messageText.length > 60 ? messageText.substring(0, 60) + '...' : messageText}"`,
+          type: 'message'
+        });
+      }
     } catch (err) {
       console.warn('[chatService] Supabase send error, updating locally:', err);
     }
