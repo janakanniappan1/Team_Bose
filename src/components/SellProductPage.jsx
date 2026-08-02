@@ -27,31 +27,27 @@ import ProductPreview from './Seller/ProductPreview';
 export default function SellProductPage({ onProductSubmitted, onCancel, currentUser }) {
   const [currentStep, setCurrentStep] = useState(1); // 1: Audience, 2: Details, 3: Preview
   const [audience, setAudience] = useState('students');
-  const [images, setImages] = useState([
-    'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80'
-  ]);
+  const [images, setImages] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [validationError, setValidationError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedProduct, setSubmittedProduct] = useState(null);
 
   const [formData, setFormData] = useState({
-    title: 'Casio fx-991CW Advanced Scientific Calculator',
+    title: '',
     category: 'electronics',
     condition: 'Like New',
-    price: 900,
-    originalPrice: 1595,
-    negotiable: true,
-    description: 'Practically brand new Casio CW scientific calculator. Purchased last semester for engineering math. Includes box, manual, and protective case.',
-    hostel: 'Hostel 5 (Boys)',
-    department: 'Computer Science & Engineering',
-    pickupPreference: 'Central Library / Student Activity Center',
-    brand: 'Casio',
-    model: 'fx-991CW',
-    purchaseYear: '2025',
-    reasonForSelling: 'Completed math course requirement'
+    price: '',
+    originalPrice: '',
+    negotiable: false,
+    description: '',
+    hostel: currentUser?.hostelBlock || '',
+    department: currentUser?.department || '',
+    pickupPreference: '',
+    brand: '',
+    model: '',
+    purchaseYear: '',
+    reasonForSelling: ''
   });
 
   // Camera Live Modal State

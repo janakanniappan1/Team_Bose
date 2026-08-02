@@ -1,4 +1,3 @@
-import { MOCK_NOTIFICATIONS } from '../data/mockData';
 import { productSupabase } from '../lib/supabase';
 
 // ============================================================
@@ -11,9 +10,9 @@ const NOTIFS_STORAGE_KEY = 'uniswap_notifications';
 const getStoredNotifs = () => {
   try {
     const saved = localStorage.getItem(NOTIFS_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : MOCK_NOTIFICATIONS;
+    return saved ? JSON.parse(saved) : [];
   } catch {
-    return MOCK_NOTIFICATIONS;
+    return [];
   }
 };
 

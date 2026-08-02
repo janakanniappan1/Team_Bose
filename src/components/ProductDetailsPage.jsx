@@ -18,7 +18,7 @@ import {
   ShieldAlert,
   Maximize2
 } from 'lucide-react';
-import { MOCK_PRODUCTS } from '../data/mockData';
+
 import { ProductCard } from './HomePage';
 import { productService } from '../services/productService';
 import ShareProductModal from './Share/ShareProductModal';
@@ -33,7 +33,8 @@ export default function ProductDetailsPage({
   onStartChat, 
   onSelectProduct,
   onToggleCompare,
-  isCompared = false
+  isCompared = false,
+  allProducts = []
 }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showCallModal, setShowCallModal] = useState(false);
@@ -53,7 +54,7 @@ export default function ProductDetailsPage({
     ? product.images 
     : ['https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80'];
 
-  const relatedProducts = MOCK_PRODUCTS.filter(
+  const relatedProducts = allProducts.filter(
     (p) => p.id !== product.id && (p.category === product.category || p.department === product.department)
   ).slice(0, 4);
 

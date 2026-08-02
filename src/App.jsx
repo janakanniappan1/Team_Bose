@@ -381,6 +381,7 @@ export default function App() {
             onSelectProduct={handleSelectProduct}
             onToggleCompare={handleToggleCompare}
             isCompared={compareList.some(p => p.id === (selectedProduct?.id || products[0]?.id))}
+            allProducts={products}
           />
         )}
 

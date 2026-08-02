@@ -24,12 +24,12 @@ import {
   Scale,
   MessageSquare
 } from 'lucide-react';
-import { CATEGORIES, MOCK_PRODUCTS } from '../data/mockData';
+import { CATEGORIES } from '../data/mockData';
 import RecentlyViewedBar from './Recent/RecentlyViewedBar';
 import { productService } from '../services/productService';
 
 export default function HomePage({ 
-  products = MOCK_PRODUCTS,
+  products = [],
   onSelectProduct, 
   onGoToSell, 
   wishlist = [], 

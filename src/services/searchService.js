@@ -1,9 +1,9 @@
-import { MOCK_PRODUCTS } from '../data/mockData';
+import { productService } from './productService';
 
 const SAVED_SEARCHES_KEY = 'uniswap_saved_searches';
 
 export const searchService = {
-  getLiveSuggestions: async (query) => {
+  getLiveSuggestions: async (query, productsList = null) => {
     if (!query || query.trim().length === 0) {
       return { suggestions: [], matchingProducts: [] };
     }
@@ -12,21 +12,22 @@ export const searchService = {
 
     const popularTerms = [
       { term: 'Laptop', category: 'electronics', popular: true },
-      { term: 'Calculator FX-991EX', category: 'calculators', popular: true },
-      { term: 'Engineering Drawing Board', category: 'stationery', popular: false },
-      { term: 'CLRS Cormen Algorithms', category: 'textbooks', popular: true },
-      { term: 'Gear Bicycle', category: 'cycles', popular: true },
-      { term: 'Hostel Study Table', category: 'furniture', popular: false },
-      { term: 'Lab Coat Medium', category: 'lab-equipment', popular: false },
-      { term: 'Badminton Racket Yonex', category: 'sports', popular: true }
+      { term: 'Calculator', category: 'electronics', popular: true },
+      { term: 'Books', category: 'books', popular: true },
+      { term: 'Cycle', category: 'cycles', popular: true },
+      { term: 'Study Table', category: 'furniture', popular: false },
+      { term: 'Lab Coat', category: 'lab', popular: false },
+      { term: 'Badminton Racket', category: 'sports', popular: true }
     ];
 
     const matchedTerms = popularTerms.filter(t => t.term.toLowerCase().includes(q));
 
-    const matchedProducts = MOCK_PRODUCTS.filter(p => 
-      p.title.toLowerCase().includes(q) ||
-      p.department.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+    const products = productsList || await productService.getProducts();
+
+    const matchedProducts = products.filter(p => 
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.department && p.department.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q))
     ).slice(0, 4);
 
     return {

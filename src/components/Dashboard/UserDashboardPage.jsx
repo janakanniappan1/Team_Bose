@@ -83,9 +83,9 @@ export default function UserDashboardPage({
 
   // Seller listings for current user
   const myProducts = products.filter((p) => 
-    p.sellerName === user?.fullName || 
-    p.sellerName === 'Jana K' || 
-    p.id.startsWith('prod-') || 
+    (user?.fullName && p.sellerName === user.fullName) || 
+    (user?.username && p.sellerName === user.username) ||
+    (user?.id && (p.sellerId === user.id || p.seller_id === user.id)) ||
     p.id.startsWith('my-')
   );
 

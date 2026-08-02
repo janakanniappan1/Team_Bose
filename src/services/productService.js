@@ -1,4 +1,3 @@
-import { MOCK_PRODUCTS } from '../data/mockData';
 import { productSupabase } from '../lib/supabase';
 
 const PRODUCTS_KEY = 'uniswap_stored_products';
@@ -17,16 +16,14 @@ const getStoredProducts = () => {
   } catch {
     // fallback
   }
-  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(MOCK_PRODUCTS));
-  return MOCK_PRODUCTS;
+  return [];
 };
 
 export const productService = {
   /**
-   * Fetch all products (LocalStorage + Supabase user_imagesss table)
+   * Fetch all products from Supabase user_imagesss table (database-only)
    */
   async getProducts() {
-    const localProducts = getStoredProducts();
     try {
       const { data, error } = await productSupabase
         .from('user_imagesss')
@@ -70,15 +67,13 @@ export const productService = {
           status: row.status || 'Approved'
         }));
 
-        // Merge DB products with local products (avoiding duplicate IDs)
-        const dbIds = new Set(dbProducts.map(p => p.id));
-        const merged = [...dbProducts, ...localProducts.filter(p => !dbIds.has(p.id))];
-        return merged;
+        return dbProducts;
       }
     } catch (err) {
-      console.warn('[productService] Falling back to local storage products:', err);
+      console.warn('[productService] Supabase fetch failed:', err);
     }
-    return localProducts;
+    // If Supabase returned nothing or errored, return locally cached user-created products
+    return getStoredProducts();
   },
 
   /**

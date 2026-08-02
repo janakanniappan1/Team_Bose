@@ -9,7 +9,7 @@ import {
   Clock, 
   Check 
 } from 'lucide-react';
-import { MOCK_NOTIFICATIONS } from '../data/mockData';
+
 
 export default function NotificationsModal({ isOpen, onClose, notifications, onMarkAllRead }) {
   if (!isOpen) return null;
