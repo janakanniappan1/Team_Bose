@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { UnreadBadge } from './UnreadBadge';
 
-export function ConversationCard({ thread, currentUserId, currentUser, isActive, onClick }) {
+function ConversationCardComponent({ thread, currentUserId, currentUser, isActive, onClick }) {
   if (!thread) return null;
 
   const isBuyer = String(thread.buyer_id).toLowerCase() === String(currentUserId).toLowerCase();
@@ -98,3 +98,14 @@ export function ConversationCard({ thread, currentUserId, currentUser, isActive,
     </div>
   );
 }
+
+export const ConversationCard = memo(ConversationCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.thread?.id === nextProps.thread?.id &&
+    prevProps.thread?.last_message === nextProps.thread?.last_message &&
+    prevProps.thread?.last_message_time === nextProps.thread?.last_message_time &&
+    prevProps.thread?.unreadCount === nextProps.thread?.unreadCount &&
+    prevProps.thread?.is_online === nextProps.thread?.is_online
+  );
+});

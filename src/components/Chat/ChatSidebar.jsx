@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, MessageSquare, Edit3 } from 'lucide-react';
 import { ConversationCard } from './ConversationCard';
 
 export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUserId, currentUser }) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredThreads = threads.filter((t) => {
-    const opponent = t.opponent;
-    const opponentName = (opponent?.full_name || opponent?.username || t.seller_name || t.buyer_name || '').toLowerCase();
-    const itemTitle = (t.item_title || '').toLowerCase();
+  const filteredThreads = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return threads;
+    return threads.filter((t) => {
+      const opponent = t.opponent;
+      const opponentName = (opponent?.full_name || opponent?.username || t.seller_name || t.buyer_name || '').toLowerCase();
+      const itemTitle = (t.item_title || '').toLowerCase();
 
-    return opponentName.includes(searchQuery.toLowerCase()) || itemTitle.includes(searchQuery.toLowerCase());
-  });
+      return opponentName.includes(query) || itemTitle.includes(query);
+    });
+  }, [threads, searchQuery]);
 
-  const totalUnread = threads.reduce((acc, t) => {
-    return acc + (t.unreadCount || 0);
-  }, 0);
+  const totalUnread = useMemo(() => {
+    return threads.reduce((acc, t) => acc + (t.unreadCount || 0), 0);
+  }, [threads]);
 
   return (
     <div className="chat-sidebar border-right bg-white d-flex flex-column h-100 w-100">

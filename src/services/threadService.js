@@ -4,6 +4,25 @@ import { productSupabase, supabase } from '../lib/supabase';
 // threadService — Uses uc_threads (zero conflict prefix)
 // ============================================================
 
+const profileMemoryCache = new Map();
+
+const cacheProfile = (u) => {
+  if (!u) return null;
+  const profile = {
+    id: u.id || u.username,
+    username: u.username,
+    full_name: u.full_name || u.username,
+    avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username || u.full_name}`,
+  };
+  if (u.id) {
+    profileMemoryCache.set(u.id, profile);
+    profileMemoryCache.set(String(u.id), profile);
+  }
+  if (u.username) profileMemoryCache.set(u.username, profile);
+  if (u.full_name) profileMemoryCache.set(u.full_name, profile);
+  return profile;
+};
+
 export const threadService = {
 
   getUserThreads: async (userId, userUsername = null, userFullName = null) => {
@@ -33,47 +52,37 @@ export const threadService = {
         })
       )];
 
-      let usersMap = {};
-      try {
-        const numericIds = opponentIds.filter(id => !isNaN(id));
-        const { data: usersById } = numericIds.length > 0 ? await supabase
-          .from('users')
-          .select('id, username, full_name')
-          .in('id', numericIds) : { data: [] };
+      // Global memory cache for resolved user profiles to eliminate DB1 latency
+      const missingOpponents = opponentIds.filter(id => id && !profileMemoryCache.has(id) && !profileMemoryCache.has(String(id)));
 
-        const { data: usersByUsername } = await supabase
-          .from('users')
-          .select('id, username, full_name')
-          .in('username', opponentIds);
+      if (missingOpponents.length > 0) {
+        try {
+          const numericIds = missingOpponents.filter(id => !isNaN(id));
+          const { data: usersById } = numericIds.length > 0 ? await supabase
+            .from('users')
+            .select('id, username, full_name')
+            .in('id', numericIds) : { data: [] };
 
-        const { data: usersByFullName } = await supabase
-          .from('users')
-          .select('id, username, full_name')
-          .in('full_name', opponentIds);
+          const { data: usersByUsername } = await supabase
+            .from('users')
+            .select('id, username, full_name')
+            .in('username', missingOpponents);
 
-        const allUsers = [...(usersById || []), ...(usersByUsername || []), ...(usersByFullName || [])];
+          const { data: usersByFullName } = await supabase
+            .from('users')
+            .select('id, username, full_name')
+            .in('full_name', missingOpponents);
 
-        allUsers.forEach(u => {
-          const profile = {
-            id: u.id || u.username,
-            username: u.username,
-            full_name: u.full_name || u.username,
-            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username || u.full_name}`,
-          };
-          if (u.id) {
-            usersMap[u.id] = profile;
-            usersMap[String(u.id)] = profile;
-          }
-          if (u.username) usersMap[u.username] = profile;
-          if (u.full_name) usersMap[u.full_name] = profile;
-        });
-      } catch (e) { console.warn('[threadService] opponent fetch (non-fatal):', e); }
+          const allUsers = [...(usersById || []), ...(usersByUsername || []), ...(usersByFullName || [])];
+          allUsers.forEach(cacheProfile);
+        } catch (e) { console.warn('[threadService] opponent fetch (non-fatal):', e); }
+      }
 
       return threads.map(thread => {
         const bIdStr = String(thread.buyer_id || '').trim().toLowerCase();
         const isBuyer = (bIdStr === uIdStr) || (uUsernameStr && bIdStr === uUsernameStr);
         const opponentId = isBuyer ? thread.seller_id : thread.buyer_id;
-        const opponent = usersMap[opponentId] || usersMap[String(opponentId)] || {
+        const opponent = profileMemoryCache.get(opponentId) || profileMemoryCache.get(String(opponentId)) || {
           id: opponentId,
           username: opponentId,
           full_name: opponentId || 'Campus Student',

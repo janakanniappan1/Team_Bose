@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { SeenIndicator } from './SeenIndicator';
 import { ShoppingBag, Tag, ExternalLink } from 'lucide-react';
 
-export function MessageBubble({ message, isMe, onOpenProduct }) {
+function MessageBubbleComponent({ message, isMe, onOpenProduct }) {
   if (!message) return null;
 
   const formattedTime = (timestamp) => {
@@ -98,3 +98,13 @@ export function MessageBubble({ message, isMe, onOpenProduct }) {
     </div>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.isMe === nextProps.isMe &&
+    prevProps.message?.id === nextProps.message?.id &&
+    prevProps.message?.is_seen === nextProps.message?.is_seen &&
+    prevProps.message?.is_delivered === nextProps.message?.is_delivered &&
+    prevProps.message?.message === nextProps.message?.message
+  );
+});

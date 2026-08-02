@@ -18,23 +18,26 @@ import {
 export function useTyping(threadId, currentUserId, opponentId) {
   const [isOpponentTyping, setIsOpponentTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const lastEmitRef = useRef(0);
 
-  // ── Emit typing event to DB (with auto-clear) ─────────────
+  // ── Emit typing event to DB (throttled to 2s, auto-clear 2.5s) ──
   const sendTypingNotification = useCallback(() => {
     if (!threadId || !currentUserId) return;
 
-    // Emit typing = true
-    setTypingStatus(threadId, currentUserId, true);
+    const now = Date.now();
+    if (now - lastEmitRef.current > 2000) {
+      lastEmitRef.current = now;
+      setTypingStatus(threadId, currentUserId, true);
+    }
 
-    // Clear any existing auto-clear timer
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Auto clear after 2 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       setTypingStatus(threadId, currentUserId, false);
-    }, 2000);
+      lastEmitRef.current = 0;
+    }, 2500);
   }, [threadId, currentUserId]);
 
   // Alias for MessagesPage compatibility

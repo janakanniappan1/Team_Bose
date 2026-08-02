@@ -15,9 +15,15 @@ export function ChatMessages({
   const scrollRef = useRef(null);
   const bottomRef = useRef(null);
 
-  // Auto scroll to bottom when new messages arrive
+  // Smart auto-scroll to bottom only when user is near bottom
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!scrollRef.current) return;
+    const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+
+    if (isNearBottom || messages.length <= 10) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages.length, isTargetTyping]);
 
   // Handle infinite scroll up
