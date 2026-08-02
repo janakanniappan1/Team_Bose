@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
+import { productSupabase } from '../lib/supabase';
 
 export function useProducts() {
   const [products, setProducts] = useState([]);
@@ -19,6 +20,31 @@ export function useProducts() {
 
   useEffect(() => {
     fetchProducts();
+
+    // Realtime subscription for dynamic live loading (INSERT, UPDATE, DELETE)
+    const channel = productSupabase
+      .channel('realtime:user_imagesss')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_imagesss' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old?.id;
+            if (deletedId) {
+              setProducts((prev) => prev.filter((p) => p.id !== deletedId));
+            } else {
+              fetchProducts();
+            }
+          } else {
+            fetchProducts();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      productSupabase.removeChannel(channel);
+    };
   }, []);
 
   const addProduct = async (newProductData) => {

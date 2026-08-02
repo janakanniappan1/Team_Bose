@@ -137,12 +137,28 @@ export const productService = {
   },
 
   /**
-   * Delete a product by ID
+   * Delete a product by ID (Deletes locally AND from Supabase user_imagesss table for all users)
    */
   async deleteProduct(productId) {
     const products = getStoredProducts();
     const updated = products.filter((p) => p.id !== productId);
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(updated));
+
+    // Delete from Supabase Database (user_imagesss table)
+    try {
+      const { error } = await productSupabase
+        .from('user_imagesss')
+        .delete()
+        .eq('id', productId);
+
+      if (error) {
+        console.error('[Supabase] Delete product error:', error.message);
+      } else {
+        console.log('[Supabase] Successfully deleted product:', productId);
+      }
+    } catch (err) {
+      console.error('[Supabase] Delete product exception:', err);
+    }
     return true;
   },
 

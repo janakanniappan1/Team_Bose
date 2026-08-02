@@ -33,7 +33,6 @@ export default function DashboardSidebar({
     { id: 'profile', label: 'My Campus Profile', icon: <User size={18} /> },
     { id: 'listings', label: 'My Item Listings', icon: <Package size={18} /> },
     { id: 'wishlist', label: 'Saved Wishlist', icon: <Heart size={18} /> },
-    { id: 'messages', label: 'Chat Messages', icon: <MessageSquare size={18} />, badge: unreadMessages },
     { id: 'purchases', label: 'Purchase History', icon: <ShoppingBag size={18} /> },
     { id: 'offers', label: 'Price Offers & Bids', icon: <Tag size={18} /> }
   ];
@@ -150,9 +149,9 @@ export default function DashboardSidebar({
           <PlusCircle size={24} />
         </button>
 
-        <button className={`bottom-bar-item ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => onSelectTab('messages')}>
-          <MessageSquare size={20} />
-          <span>Messages</span>
+        <button className={`bottom-bar-item ${activeTab === 'wishlist' ? 'active' : ''}`} onClick={() => onSelectTab('wishlist')}>
+          <Heart size={20} />
+          <span>Wishlist</span>
         </button>
 
         <button className={`bottom-bar-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => onSelectTab('profile')}>
