@@ -89,33 +89,41 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     }
   }, [initialChat]);
 
-  const activeThread = chatThreads.find((c) => c.id === activeChatId) || chatThreads[0] || MOCK_MESSAGES[0];
+  // Dynamic Active Thread resolution:
+  // Find first thread where contact is an OPPONENT user (not self)
+  const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'Jana').split(' ')[0].toLowerCase();
+  
+  const validOpponentThread = chatThreads.find(t => {
+    const sellerLower = (t.sellerName || '').toLowerCase();
+    return !sellerLower.includes(myFirstNameLower);
+  });
+
+  const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0];
 
   // Helper: Get the OTHER participant's name for WhatsApp view (so Jana sees Rizwan, and Rizwan sees Jana)
   const getContactInfo = (thread) => {
     if (!thread) return { name: 'Campus User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
     
-    const myNameLower = (currentUser?.fullName || '').toLowerCase();
-    const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'User').split(' ')[0].toLowerCase();
+    const myFullNameLower = (currentUser?.fullName || '').toLowerCase();
     const myUsernameLower = (currentUser?.username || '').toLowerCase();
 
     const sellerNameLower = (thread.sellerName || '').toLowerCase();
     const sellerUserLower = (thread.sellerUsername || '').toLowerCase();
 
     const isSellerMe = (sellerNameLower && sellerNameLower.includes(myFirstNameLower)) ||
-                       (sellerNameLower && myNameLower && sellerNameLower.includes(myNameLower)) ||
+                       (sellerNameLower && myFullNameLower && sellerNameLower.includes(myFullNameLower)) ||
                        (sellerUserLower && myUsernameLower && sellerUserLower === myUsernameLower);
 
     if (isSellerMe) {
       return {
-        name: thread.buyerName || 'Rizwan',
+        name: thread.buyerName || 'Rizwan Ahamed',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
         dept: 'Buyer / Student',
         phone: '+91 98123 45678'
       };
     } else {
       return {
-        name: thread.sellerName || 'Seller',
+        name: thread.sellerName || 'Campus Seller',
         avatar: thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
         dept: thread.sellerDept || 'Computer Science & Engineering',
         phone: thread.sellerPhone || '+91 98765 43210'

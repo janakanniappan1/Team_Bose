@@ -150,7 +150,7 @@ export default function Navbar({
                   alt="User Profile" 
                   className="user-avatar-img"
                 />
-                <span className="user-name-short hide-tablet">{currentUser?.firstName || 'Student'}</span>
+                <span className="user-name-short hide-tablet">{currentUser?.fullName || currentUser?.firstName || 'Student'}</span>
                 <ChevronDown size={14} className="dropdown-arrow" />
               </button>
 
