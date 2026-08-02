@@ -13,8 +13,11 @@ const getStoredNotifs = () => {
 };
 
 export const notificationService = {
-  getNotifications: async () => {
+  getNotifications: async (userIdentifier = 'User') => {
     const localNotifs = getStoredNotifs();
+    const myName = userIdentifier.toLowerCase();
+    const myFirstName = userIdentifier.split(' ')[0].toLowerCase();
+
     try {
       const { data, error } = await productSupabase
         .from('user_notifications')
@@ -22,27 +25,36 @@ export const notificationService = {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        const dbNotifs = data.map((n) => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          type: n.type || 'message',
-          unread: n.unread !== false,
-          time: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'
-        }));
+        // Filter DB notifications for THIS logged in user
+        const dbNotifs = data
+          .filter((n) => {
+            const notifUser = (n.username || '').toLowerCase();
+            return notifUser.includes(myFirstName) || notifUser.includes(myName) || myName.includes(notifUser);
+          })
+          .map((n) => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            type: n.type || 'message',
+            unread: n.unread !== false,
+            time: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'
+          }));
 
-        const dbIds = new Set(dbNotifs.map(n => n.id));
-        const merged = [...dbNotifs, ...localNotifs.filter(n => !dbIds.has(n.id))];
-        localStorage.setItem(NOTIFS_STORAGE_KEY, JSON.stringify(merged));
-        return merged;
+        return dbNotifs;
       }
     } catch (err) {
       console.warn('[notificationService] Supabase read fallback:', err);
     }
-    return localNotifs;
+
+    // Filter local storage notifications for THIS logged in user
+    return localNotifs.filter((n) => {
+      if (!n.targetUser) return true; // general announcements
+      const notifUser = n.targetUser.toLowerCase();
+      return notifUser.includes(myFirstName) || notifUser.includes(myName);
+    });
   },
 
-  markAllAsRead: async () => {
+  markAllAsRead: async (userIdentifier = 'User') => {
     try {
       await productSupabase
         .from('user_notifications')
@@ -58,7 +70,7 @@ export const notificationService = {
     return updated;
   },
 
-  clearAllNotifications: async () => {
+  clearAllNotifications: async (userIdentifier = 'User') => {
     try {
       await productSupabase.from('user_notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     } catch (err) {
@@ -69,14 +81,15 @@ export const notificationService = {
   },
 
   addNotification: async (notif) => {
+    const targetUsername = notif.username || notif.targetUser || 'Jana K';
     const title = notif.title || 'New Message Received 💬';
     const message = notif.message || notif.desc || 'A buyer sent a new message regarding your listing.';
     const notifType = notif.type || 'message';
 
-    // 1. Insert into Supabase user_notifications table
+    // 1. Insert into Supabase user_notifications table for the RECIPIENT
     try {
       await productSupabase.from('user_notifications').insert([{
-        username: notif.username || 'Jana K',
+        username: targetUsername,
         title: title,
         message: message,
         type: notifType,
@@ -86,10 +99,11 @@ export const notificationService = {
       console.warn('[notificationService] Supabase insert fallback:', err);
     }
 
-    // 2. Insert into LocalStorage
+    // 2. Insert into LocalStorage with targetUser field
     const current = getStoredNotifs();
     const newNotif = {
       id: `notif-${Date.now()}`,
+      targetUser: targetUsername,
       unread: true,
       time: 'Just now',
       title: title,

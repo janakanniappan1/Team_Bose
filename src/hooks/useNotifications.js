@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { notificationService } from '../services/notificationService';
 
-export function useNotifications() {
+export function useNotifications(currentUser) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchNotifs = async () => {
-    const data = await notificationService.getNotifications();
+    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
+    const data = await notificationService.getNotifications(userIdentifier);
     setNotifications(data);
     setLoading(false);
   };
@@ -15,15 +16,17 @@ export function useNotifications() {
     fetchNotifs();
     const interval = setInterval(fetchNotifs, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser?.fullName, currentUser?.username]);
 
   const markAllRead = async () => {
-    const updated = await notificationService.markAllAsRead();
+    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
+    const updated = await notificationService.markAllAsRead(userIdentifier);
     setNotifications(updated);
   };
 
   const clearAll = async () => {
-    const updated = await notificationService.clearAllNotifications();
+    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
+    const updated = await notificationService.clearAllNotifications(userIdentifier);
     setNotifications(updated);
   };
 
@@ -44,3 +47,4 @@ export function useNotifications() {
     refreshNotifications: fetchNotifs
   };
 }
+

@@ -49,7 +49,7 @@ export default function App() {
   const { products, addProduct, removeProduct, updateProductStatus, changePrice } = useProducts();
   const { wishlist, toggleWishlist, isWishlisted } = useWishlist();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, savedSearches, removeSavedSearch, renameSavedSearch } = useSearch();
-  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
+  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications(currentUser);
   const { chats, activeChat, setActiveChat, sendMessage, startChatWithSeller } = useChats();
 
   // Restore session on page load (check if user was already logged in)
