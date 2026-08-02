@@ -8,7 +8,11 @@ const getStoredProducts = () => {
   try {
     const stored = localStorage.getItem(PRODUCTS_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return parsed.map(p => ({
+        ...p,
+        images: (p.images || []).map(img => (img && img.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : img)
+      }));
     }
   } catch {
     // fallback
@@ -48,7 +52,7 @@ export const productService = {
           sellerRating: 5.0,
           sellerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
           images: (row.image_urls && row.image_urls.length > 0) 
-            ? row.image_urls 
+            ? row.image_urls.map(url => (url && url.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : url)
             : ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80'],
           videoUrl: row.video_url || null,
           description: row.description || '',

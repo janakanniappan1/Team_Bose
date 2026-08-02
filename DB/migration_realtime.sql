@@ -55,9 +55,24 @@ CREATE TABLE IF NOT EXISTS public.uc_typing (
   PRIMARY KEY (thread_id, user_id)
 );
 
+-- ── Table 5: user_notifications ─────────────────────────
+CREATE TABLE IF NOT EXISTS public.user_notifications (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    TEXT,
+  username   TEXT DEFAULT 'User',
+  title      TEXT NOT NULL,
+  message    TEXT NOT NULL,
+  type       TEXT DEFAULT 'message',
+  unread     BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── RLS: Disable for simplicity (demo / hackathon) ───────
-ALTER TABLE public.uc_threads  DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.uc_messages DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.uc_threads         DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.uc_messages        DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.uc_presence        DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.uc_typing          DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_notifications DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.uc_presence DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.uc_typing   DISABLE ROW LEVEL SECURITY;
 
