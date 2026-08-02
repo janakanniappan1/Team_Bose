@@ -1,31 +1,33 @@
 import { productSupabase } from '../lib/supabase';
+import { chatService } from './chatService';
 
 export const threadService = {
   /**
-   * Fetch all conversations for the authenticated user
+   * Fetch all conversations for the authenticated user (Supports UUID and username sessions)
    */
-  getThreads: async (currentUserId) => {
-    if (!currentUserId) return [];
+  getThreads: async (currentUserId, currentUser = null) => {
     try {
-      const { data, error } = await productSupabase
-        .from('chat_threads')
-        .select(`
-          *,
-          buyer:profiles!chat_threads_buyer_id_fkey(*),
-          seller:profiles!chat_threads_seller_id_fkey(*)
-        `)
-        .or(`buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId}`)
-        .order('last_message_time', { ascending: false });
+      if (currentUserId && (currentUserId.includes('-') || currentUserId.length > 20)) {
+        const { data, error } = await productSupabase
+          .from('chat_threads')
+          .select(`
+            *,
+            buyer:profiles!chat_threads_buyer_id_fkey(*),
+            seller:profiles!chat_threads_seller_id_fkey(*)
+          `)
+          .or(`buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId}`)
+          .order('last_message_time', { ascending: false });
 
-      if (error) {
-        console.warn('[threadService] Fetch threads error:', error.message);
-        return [];
+        if (!error && data && data.length > 0) {
+          return data;
+        }
       }
-      return data || [];
     } catch (err) {
-      console.error('[threadService] Exception:', err);
-      return [];
+      console.warn('[threadService] UUID threads fetch error:', err);
     }
+
+    // Fallback to chatService getChatThreads for smooth dual-user support
+    return await chatService.getChatThreads(currentUser);
   },
 
   /**

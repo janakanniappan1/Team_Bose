@@ -36,18 +36,22 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
   };
 
   const handleSendMessage = async (text) => {
-    if (!activeThreadId || !currentUserId || !opponentProfile?.id) return;
+    if (!text || !text.trim()) return;
 
-    const receiverId = opponentProfile.id;
+    const targetThreadId = activeThreadId || (activeThread ? activeThread.id : 'default-chat');
+    const senderId = currentUserId || currentUser?.username || 'user-1';
+    const receiverId = opponentProfile?.id || opponentProfile?.username || 'receiver-1';
+    const recipientUsername = opponentProfile?.full_name || opponentProfile?.username || 'Campus Student';
     const tempId = `temp_${Date.now()}`;
 
     // Optimistic UI message insert
     const optimisticMsg = {
       id: tempId,
-      thread_id: activeThreadId,
-      sender_id: currentUserId,
+      thread_id: targetThreadId,
+      sender_id: senderId,
       receiver_id: receiverId,
-      message: text,
+      sender_username: currentUser?.fullName || currentUser?.username || 'User',
+      message: text.trim(),
       message_type: 'text',
       is_seen: false,
       is_delivered: true,
@@ -56,28 +60,35 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
 
     addOptimisticMessage(optimisticMsg);
 
-    // Send to Supabase DB
+    // Send to Supabase DB & notify recipient
     await chatService.sendMessage({
-      threadId: activeThreadId,
-      senderId: currentUserId,
-      receiverId,
-      message: text,
+      threadId: targetThreadId,
+      senderId: senderId,
+      receiverId: receiverId,
+      senderUsername: currentUser?.fullName || currentUser?.username || 'User',
+      recipientUsername: recipientUsername,
+      message: text.trim(),
       messageType: 'text'
     });
   };
 
   const handleSendImage = async (imageFile) => {
-    if (!activeThreadId || !currentUserId || !opponentProfile?.id) return;
+    if (!imageFile) return;
 
     const imageUrl = await chatService.uploadChatImage(imageFile);
     if (!imageUrl) return;
 
-    const receiverId = opponentProfile.id;
+    const targetThreadId = activeThreadId || (activeThread ? activeThread.id : 'default-chat');
+    const senderId = currentUserId || currentUser?.username || 'user-1';
+    const receiverId = opponentProfile?.id || opponentProfile?.username || 'receiver-1';
+    const recipientUsername = opponentProfile?.full_name || opponentProfile?.username || 'Campus Student';
 
     await chatService.sendMessage({
-      threadId: activeThreadId,
-      senderId: currentUserId,
-      receiverId,
+      threadId: targetThreadId,
+      senderId: senderId,
+      receiverId: receiverId,
+      senderUsername: currentUser?.fullName || currentUser?.username || 'User',
+      recipientUsername: recipientUsername,
       message: '📷 Photo',
       messageType: 'image',
       imageUrl

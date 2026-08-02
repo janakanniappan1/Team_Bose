@@ -2,21 +2,15 @@ import { useState, useEffect } from 'react';
 import { threadService } from '../services/threadService';
 import { productSupabase } from '../lib/supabase';
 
-export function useThreads(currentUserId) {
+export function useThreads(currentUserId, currentUser = null) {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUserId) {
-      setThreads([]);
-      setLoading(false);
-      return;
-    }
-
     let isMounted = true;
 
     // Initial fetch
-    threadService.getThreads(currentUserId).then((data) => {
+    threadService.getThreads(currentUserId, currentUser).then((data) => {
       if (isMounted) {
         setThreads(data);
         setLoading(false);
@@ -25,7 +19,7 @@ export function useThreads(currentUserId) {
 
     // Real-time subscription to chat_threads
     const channel = productSupabase
-      .channel(`user_threads_${currentUserId}`)
+      .channel(`user_threads_${currentUserId || 'all'}`)
       .on(
         'postgres_changes',
         {
@@ -34,7 +28,7 @@ export function useThreads(currentUserId) {
           table: 'chat_threads'
         },
         async () => {
-          const updated = await threadService.getThreads(currentUserId);
+          const updated = await threadService.getThreads(currentUserId, currentUser);
           if (isMounted) {
             setThreads(updated);
           }
