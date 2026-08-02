@@ -120,6 +120,8 @@ export default function App() {
   const handleLoginSuccess = (authUser) => {
     setIsLoggedIn(true);
     localStorage.setItem(SESSION_KEY, 'true');
+    setActiveChat(null);
+    setViewParams({});
     // Map Supabase user's full_name (set at signup) onto the currentUser shape
     if (authUser) {
       const displayName = authUser.full_name || (authUser.username ? authUser.username.charAt(0).toUpperCase() + authUser.username.slice(1) : 'User');
@@ -140,6 +142,8 @@ export default function App() {
   const handleSignOut = async () => {
     await authService.logout();
     setIsLoggedIn(false);
+    setActiveChat(null);
+    setViewParams({});
     localStorage.setItem(SESSION_KEY, 'false');
     showToast('Signed out successfully', 'info');
     navigateToView('login');
@@ -407,7 +411,7 @@ export default function App() {
           <MessagesView
             currentUser={currentUser}
             initialChat={activeChat}
-            initialThreadId={viewParams?.chatId || activeChat?.id}
+            initialThreadId={viewParams?.chatId || null}
             onSelectProduct={handleSelectProduct}
             onGoBack={handleGoBack}
           />
