@@ -41,8 +41,10 @@ export const productService = {
           .filter(row => {
             const isDeleted = String(row.status || '').toLowerCase() === 'deleted';
             const seller = String(row.username || row.seller_name || row.seller_id || row.user_id || '').toLowerCase();
-            const isRamaa = seller.includes('ramaa');
-            return !isDeleted && !isRamaa;
+            const isRamaa = seller.includes('ramaa') || seller.includes('rama');
+            const isTargetDeletedId = String(row.id || '') === '141fc4fd-f974-41f5-bf3f-0d74bc538d6c';
+            const isTargetProduct = String(row.product_name || '').toLowerCase().includes('casio fx-991cw') && isRamaa;
+            return !isDeleted && !isRamaa && !isTargetDeletedId && !isTargetProduct;
           })
           .map((row) => {
             let catKey = String(row.Category || 'others').toLowerCase().trim();

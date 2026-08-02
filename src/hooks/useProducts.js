@@ -19,6 +19,13 @@ export function useProducts() {
   };
 
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem('uniswap_stored_products');
+      if (stored && (stored.toLowerCase().includes('ramaa') || stored.includes('141fc4fd-f974-41f5-bf3f-0d74bc538d6c'))) {
+        localStorage.removeItem('uniswap_stored_products');
+      }
+    } catch {}
+
     fetchProducts();
 
     // Realtime subscription for dynamic live loading (INSERT, UPDATE, DELETE)
