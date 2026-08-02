@@ -140,6 +140,7 @@ export default function SearchResultsPage({
               setFilters={setFilters}
               onResetFilters={handleResetAllFilters}
               resultCount={filteredProducts.length}
+              allProducts={products}
             />
           </div>
 
@@ -263,6 +264,7 @@ export default function SearchResultsPage({
               setFilters={setFilters}
               onResetFilters={handleResetAllFilters}
               resultCount={filteredProducts.length}
+              allProducts={products}
               isMobileDrawer={true}
               onCloseMobile={() => setShowMobileFilterDrawer(false)}
             />

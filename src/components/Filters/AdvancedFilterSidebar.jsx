@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   Filter, 
   RotateCcw, 
@@ -21,8 +21,28 @@ export default function AdvancedFilterSidebar({
   onResetFilters,
   resultCount = 0,
   isMobileDrawer = false,
-  onCloseMobile
+  onCloseMobile,
+  allProducts = []
 }) {
+
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    allProducts.forEach((p) => {
+      let key = String(p.category || 'others').toLowerCase().trim();
+      if (key.includes('electr') || key.includes('phone') || key.includes('mobile') || key.includes('gadget')) key = 'electronics';
+      else if (key.includes('book') || key.includes('note')) key = 'books';
+      else if (key.includes('lab')) key = 'lab';
+      else if (key.includes('furnit')) key = 'furniture';
+      else if (key.includes('cycl') || key.includes('bike')) key = 'cycles';
+      else if (key.includes('hostel')) key = 'hostel';
+      else if (key.includes('fash') || key.includes('cloth')) key = 'fashion';
+      else if (key.includes('sport')) key = 'sports';
+      else if (key.includes('station')) key = 'stationery';
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [allProducts]);
+
   const handleCategoryChange = (catId) => {
     setFilters(prev => ({
       ...prev,
@@ -91,7 +111,7 @@ export default function AdvancedFilterSidebar({
             >
               <span className="cat-dot-small" style={{ backgroundColor: cat.color }}></span>
               <span className="flex-1 text-left">{cat.name}</span>
-              <span className="cat-count-badge">{cat.count}</span>
+              <span className="cat-count-badge">{categoryCounts[cat.id] || 0}</span>
             </button>
           ))}
         </div>
