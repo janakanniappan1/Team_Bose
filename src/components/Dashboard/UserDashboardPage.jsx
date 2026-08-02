@@ -95,11 +95,11 @@ export default function UserDashboardPage({
   const soldProducts = myProducts.filter(p => p.status === 'Sold').length;
 
   return (
-    <div className="unified-dashboard-wrapper py-4 animate-fade-in">
-      <div className="container">
+    <div className={`unified-dashboard-wrapper ${activeTab === 'messages' ? 'chat-mode-active' : 'py-4'} animate-fade-in`}>
+      <div className={`container ${activeTab === 'messages' ? 'chat-mode-container' : ''}`}>
         
         {/* Main Dashboard Layout: Left Sidebar + Main Content */}
-        <div className="dashboard-grid-container">
+        <div className={`dashboard-grid-container ${activeTab === 'messages' ? 'chat-mode-grid' : ''}`}>
           
           {/* 1. Left Professional Sidebar */}
           <DashboardSidebar
@@ -112,7 +112,7 @@ export default function UserDashboardPage({
           />
 
           {/* 2. Main Executive Content Window */}
-          <main className="dashboard-content-area">
+          <main className={`dashboard-content-area ${activeTab === 'messages' ? 'chat-mode-content' : ''}`}>
             
             {/* OVERVIEW / DASHBOARD HOME */}
             {activeTab === 'overview' && (
@@ -317,7 +317,7 @@ export default function UserDashboardPage({
 
             {/* MESSAGES */}
             {activeTab === 'messages' && (
-              <div style={{ height: 'calc(100vh - 72px)', height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'hidden', margin: '-1.5rem -1rem -1.5rem -1rem' }}>
+              <div className="dashboard-chat-embed-wrapper">
                 <MessagesView
                   currentUser={user}
                   onSelectProduct={onSelectProduct}
