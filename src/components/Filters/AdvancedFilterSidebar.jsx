@@ -135,7 +135,7 @@ export default function AdvancedFilterSidebar({
           <input
             type="number"
             className="form-input btn-sm"
-            placeholder="Max (₹10,000)"
+            placeholder="Max Price"
             value={filters.maxPrice || ''}
             onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
           />

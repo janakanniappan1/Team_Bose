@@ -6,13 +6,21 @@ export function useWishlist() {
 
   useEffect(() => {
     setWishlist([]);
-    wishlistService.clearWishlist();
+    if (wishlistService && typeof wishlistService.clearWishlist === 'function') {
+      wishlistService.clearWishlist();
+    }
   }, []);
 
   const toggleWishlist = (productId) => {
     const { wishlist: updated, isAdded } = wishlistService.toggleWishlist(productId);
     setWishlist(updated);
     return { wishlist: updated, isAdded };
+  };
+
+  const removeFromWishlist = (productId) => {
+    const updated = wishlistService.removeProductFromWishlist(productId);
+    setWishlist(updated);
+    return updated;
   };
 
   const isWishlisted = (productId) => {
@@ -23,6 +31,7 @@ export function useWishlist() {
     wishlist,
     wishlistCount: wishlist.length,
     toggleWishlist,
-    isWishlisted
+    isWishlisted,
+    removeFromWishlist
   };
 }

@@ -82,13 +82,23 @@ export default function UserDashboardPage({
     return n.type === notifCategory;
   });
 
-  // Seller listings for current user
-  const myProducts = products.filter((p) => 
-    (user?.fullName && p.sellerName === user.fullName) || 
-    (user?.username && p.sellerName === user.username) ||
-    (user?.id && (p.sellerId === user.id || p.seller_id === user.id)) ||
-    p.id.startsWith('my-')
-  );
+  // Seller listings for current user (robust case-insensitive matching)
+  const myProducts = products.filter((p) => {
+    const sName = String(p.sellerName || p.username || p.seller_name || '').toLowerCase().trim();
+    const uName = String(user?.username || '').toLowerCase().trim();
+    const uFull = String(user?.fullName || '').toLowerCase().trim();
+    const uFirst = String(user?.firstName || '').toLowerCase().trim();
+    const sId = String(p.sellerId || p.seller_id || '').toLowerCase().trim();
+    const uId = String(user?.id || user?.authId || '').toLowerCase().trim();
+
+    if (p.id && String(p.id).startsWith('my-')) return true;
+    if (sName && uName && (sName === uName || sName.includes(uName) || uName.includes(sName))) return true;
+    if (sName && uFull && (sName === uFull || sName.includes(uFull) || uFull.includes(sName))) return true;
+    if (sName && uFirst && (sName === uFirst || sName.includes(uFirst))) return true;
+    if (sId && uId && sId === uId) return true;
+
+    return false;
+  });
 
   const pendingListings = myProducts.filter(p => p.status === 'Pending Approval').length;
   const approvedListings = myProducts.filter(p => p.status === 'Approved' || p.status === 'Active' || !p.status).length;

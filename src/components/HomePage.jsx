@@ -224,8 +224,8 @@ export default function HomePage({
 
 
 
-      {/* 5. Recommended For You AI Section */}
-      <section className="recommended-section my-4">
+      {/* 5. Recommended For You AI Section — HIDDEN (same products appear in Featured section above) */}
+      {/* <section className="recommended-section my-4">
         <div className="container">
           <div className="recommended-card card glass-panel p-4 mb-4">
             <div className="section-header mb-4">
@@ -256,7 +256,7 @@ export default function HomePage({
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* 6. Recently Viewed Products Section */}
       <RecentlyViewedBar

@@ -40,6 +40,16 @@ export const wishlistService = {
   },
 
   /**
+   * Remove a specific product from wishlist (called when product is deleted)
+   */
+  removeProductFromWishlist(productId) {
+    const wishlist = this.getWishlist();
+    const updated = wishlist.filter(id => id !== productId);
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+    return updated;
+  },
+
+  /**
    * Clear all wishlist items to reset count to 0
    */
   clearWishlist() {

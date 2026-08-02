@@ -69,9 +69,41 @@ export default function SellProductPage({ onProductSubmitted, onCancel, currentU
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const newImageUrls = files.map((file) => URL.createObjectURL(file));
-      setImages((prev) => [...prev, ...newImageUrls].slice(0, 8));
-      setValidationError('');
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const base64DataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+            setImages((prev) => [...prev, base64DataUrl].slice(0, 8));
+            setValidationError('');
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 

@@ -11,6 +11,7 @@ import {
   Users, 
   MessageSquare,
   AlertCircle,
+  AlertTriangle,
   PlusCircle,
   Tag
 } from 'lucide-react';
@@ -26,9 +27,10 @@ export default function SellerDashboardTabs({
   onChangePrice,
   onGoToSell
 }) {
-  const [activeTab, setActiveTab] = useState('approved'); // 'pending', 'approved', 'rejected'
+  const [activeTab, setActiveTab] = useState('approved');
   const [editingPriceId, setEditingPriceId] = useState(null);
   const [newPrice, setNewPrice] = useState('');
+  const [confirmDeleteProduct, setConfirmDeleteProduct] = useState(null);
 
   // Filter listings by seller status
   const pendingProducts = products.filter(p => p.status === 'Pending Approval');
@@ -111,7 +113,7 @@ export default function SellerDashboardTabs({
               activeTab={activeTab}
               onSelectProduct={onSelectProduct}
               onEditProduct={onEditProduct}
-              onDeleteProduct={onDeleteProduct}
+              onDeleteProduct={setConfirmDeleteProduct}
               onToggleMarkSold={onToggleMarkSold}
               editingPriceId={editingPriceId}
               setEditingPriceId={setEditingPriceId}
@@ -129,6 +131,79 @@ export default function SellerDashboardTabs({
           actionLabel="Post New Item for Sale"
           onAction={onGoToSell}
         />
+      )}
+
+      {/* ⚠️ Delete Confirmation Modal */}
+      {confirmDeleteProduct && (
+        <div
+          className="modal-overlay"
+          style={{ zIndex: 9999 }}
+          onClick={() => setConfirmDeleteProduct(null)}
+        >
+          <div
+            className="modal-content p-4"
+            style={{ maxWidth: '420px', borderTop: '4px solid #EF4444' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <div style={{
+                background: '#FEF2F2',
+                borderRadius: '50%',
+                padding: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <AlertTriangle size={28} color="#EF4444" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111', margin: 0 }}>
+                  Delete Listing Permanently?
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '2px', marginBottom: 0 }}>
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#FFF7ED',
+              border: '1px solid #FED7AA',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '16px'
+            }}>
+              <p style={{ fontSize: '0.85rem', color: '#92400E', margin: 0 }}>
+                <strong>"{confirmDeleteProduct.title}"</strong> will be permanently removed from:
+              </p>
+              <ul style={{ fontSize: '0.82rem', color: '#92400E', margin: '6px 0 0 0', paddingLeft: '18px' }}>
+                <li>The public marketplace &amp; search results</li>
+                <li>All users' wishlists</li>
+                <li>Your seller dashboard</li>
+              </ul>
+            </div>
+
+            <div className="d-flex gap-2 justify-content-end">
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => setConfirmDeleteProduct(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm"
+                style={{ background: '#EF4444', color: '#fff', border: 'none' }}
+                onClick={() => {
+                  onDeleteProduct(confirmDeleteProduct);
+                  setConfirmDeleteProduct(null);
+                }}
+              >
+                <Trash2 size={14} /> Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

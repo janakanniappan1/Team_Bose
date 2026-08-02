@@ -48,7 +48,7 @@ export default function App() {
 
   // Database-Ready Custom Hooks Integration
   const { products, addProduct, removeProduct, updateProductStatus, changePrice } = useProducts();
-  const { wishlist, toggleWishlist, isWishlisted } = useWishlist();
+  const { wishlist, toggleWishlist, isWishlisted, removeFromWishlist } = useWishlist();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, savedSearches, removeSavedSearch, renameSavedSearch } = useSearch();
   const { notifications, unreadCount, markAllRead, clearAll, deleteNotification } = useNotifications(currentUser);
   const { activeChat, setActiveChat, startChatWithSeller } = useChats();
@@ -249,7 +249,9 @@ export default function App() {
     const targetTitle = typeof productOrId === 'object' ? productOrId.title : null;
     const sellerName = typeof productOrId === 'object' ? (productOrId.sellerName || productOrId.username) : null;
     await removeProduct(targetId, targetTitle, sellerName);
-    showToast('Listing removed successfully', 'info');
+    // Also remove from wishlist immediately
+    if (targetId) removeFromWishlist(targetId);
+    showToast('Listing permanently deleted from marketplace', 'info');
   };
 
   // Handle Mark Sold Toggle

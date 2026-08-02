@@ -39,7 +39,7 @@ export default function SearchResultsPage({
     category: selectedCategory,
     searchQuery: searchQuery,
     minPrice: 0,
-    maxPrice: 10000,
+    maxPrice: 0, // 0 means no upper limit (show all price ranges by default!)
     condition: 'All',
     department: 'All',
     hostel: 'All',
@@ -76,7 +76,7 @@ export default function SearchResultsPage({
       category: 'all',
       searchQuery: '',
       minPrice: 0,
-      maxPrice: 10000,
+      maxPrice: 0,
       condition: 'All',
       department: 'All',
       hostel: 'All',

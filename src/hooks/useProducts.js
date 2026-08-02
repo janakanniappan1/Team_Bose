@@ -19,12 +19,10 @@ export function useProducts() {
   };
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('uniswap_stored_products');
-      if (stored && (stored.toLowerCase().includes('ramaa') || stored.includes('141fc4fd-f974-41f5-bf3f-0d74bc538d6c'))) {
-        localStorage.removeItem('uniswap_stored_products');
-      }
-    } catch {}
+    // Clear ALL old stale localStorage product caches on every load
+    ['uniswap_stored_products', 'uniswap_stored_products_v2', 'uniswap_stored_products_v3', 'uniswap_stored_products_v4', 'uniswap_stored_products_v5'].forEach(key => {
+      try { localStorage.removeItem(key); } catch {}
+    });
 
     fetchProducts();
 
