@@ -2704,20 +2704,24 @@ img {
    UNI-SWAP CHAT WORKSPACE LAYOUT & RESPONSIVE DESIGN SYSTEM
    ============================================================ */
 .messages-page-container {
-  padding-bottom: 2rem;
+  height: calc(100vh - 72px) !important;
+  max-height: calc(100vh - 72px) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .chat-split-card {
-  height: 750px !important;
-  max-height: 85vh !important;
-  min-height: 550px !important;
-  border-radius: 16px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: none !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: row !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: none !important;
 }
 
 .chat-sidebar-wrapper {

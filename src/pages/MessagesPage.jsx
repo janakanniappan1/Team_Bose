@@ -104,23 +104,11 @@ export function MessagesPage({ currentUser, initialThreadId, initialChat, onGoBa
   }
 
   return (
-    <div className="messages-page-container py-3 animate-fade-in">
-      <div className="container">
-
-        {/* Navigation Bar */}
-        <div className="d-flex align-items-center justify-content-between mb-3">
-          <button className="btn btn-outline btn-sm" onClick={onGoBack}>
-            <ArrowLeft size={16} />
-            <span>Back to Marketplace</span>
-          </button>
-
-          <span className="text-muted hide-mobile" style={{ fontSize: '0.82rem' }}>
-            🔒 Safe Campus Direct • 100% End-to-End Realtime Messaging
-          </span>
-        </div>
+    <div className="messages-page-container h-100 animate-fade-in">
+      <div className="container-fluid p-0 h-100">
 
         {/* Main Workspace Split Card */}
-        <div className="chat-split-card card glass-panel shadow-lg overflow-hidden d-flex flex-row" style={{ height: '780px', borderRadius: '16px' }}>
+        <div className="chat-split-card card shadow-none border-0 overflow-hidden d-flex flex-row h-100">
 
           {/* Left Sidebar */}
           <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`} style={{ flex: '0 0 340px' }}>
