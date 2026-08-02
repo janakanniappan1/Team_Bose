@@ -6,21 +6,19 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredThreads = threads.filter((t) => {
-    const isBuyer = t.buyer_id === currentUserId;
-    const opponent = isBuyer ? t.seller : t.buyer;
-    const opponentName = (opponent?.full_name || opponent?.username || '').toLowerCase();
+    const opponent = t.opponent;
+    const opponentName = (opponent?.full_name || opponent?.username || t.seller_name || t.buyer_name || '').toLowerCase();
     const itemTitle = (t.item_title || '').toLowerCase();
 
     return opponentName.includes(searchQuery.toLowerCase()) || itemTitle.includes(searchQuery.toLowerCase());
   });
 
   const totalUnread = threads.reduce((acc, t) => {
-    const isBuyer = t.buyer_id === currentUserId;
-    return acc + (isBuyer ? (t.buyer_unread_count || 0) : (t.seller_unread_count || 0));
+    return acc + (t.unreadCount || 0);
   }, 0);
 
   return (
-    <div className="chat-sidebar border-right bg-white d-flex flex-column h-100" style={{ minWidth: '320px', maxWidth: '380px' }}>
+    <div className="chat-sidebar border-right bg-white d-flex flex-column h-100 w-100">
       
       {/* Top Header */}
       <div className="p-3 border-bottom d-flex align-items-center justify-content-between">

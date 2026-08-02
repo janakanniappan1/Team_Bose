@@ -4,12 +4,12 @@ import { UnreadBadge } from './UnreadBadge';
 export function ConversationCard({ thread, currentUserId, isActive, onClick }) {
   if (!thread) return null;
 
-  const isBuyer = thread.buyer_id === currentUserId;
-  const opponent = isBuyer ? thread.seller : thread.buyer;
-  const unreadCount = isBuyer ? thread.buyer_unread_count : thread.seller_unread_count;
+  const isBuyer = String(thread.buyer_id).toLowerCase() === String(currentUserId).toLowerCase();
+  const opponent = thread.opponent;
+  const unreadCount = thread.unreadCount !== undefined ? thread.unreadCount : (isBuyer ? thread.buyer_unread_count : thread.seller_unread_count);
 
-  const opponentName = opponent?.full_name || opponent?.username || (isBuyer ? 'Seller' : 'Buyer');
-  const opponentAvatar = opponent?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  const opponentName = opponent?.full_name || opponent?.username || (isBuyer ? (thread.seller_name || 'Seller') : (thread.buyer_name || 'Buyer'));
+  const opponentAvatar = opponent?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentName}`;
 
   const formattedTime = (timestamp) => {
     if (!timestamp) return '';

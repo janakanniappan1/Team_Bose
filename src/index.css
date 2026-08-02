@@ -2677,6 +2677,94 @@ img {
   30% { transform: translateY(-4px); opacity: 1; }
 }
 
+/* ============================================================
+   UNI-SWAP CHAT WORKSPACE LAYOUT & RESPONSIVE DESIGN SYSTEM
+   ============================================================ */
+.messages-page-container {
+  padding-bottom: 2rem;
+}
+
+.chat-split-card {
+  height: 750px !important;
+  max-height: 85vh !important;
+  min-height: 550px !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: row !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.chat-sidebar-wrapper {
+  flex: 0 0 320px !important;
+  width: 320px !important;
+  min-width: 320px !important;
+  max-width: 320px !important;
+  height: 100% !important;
+  border-right: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.chat-window-wrapper {
+  flex: 1 1 auto !important;
+  width: calc(100% - 320px) !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  position: relative !important;
+}
+
+.chat-sidebar {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.conversation-card {
+  transition: background-color 0.15s ease, border-left-color 0.15s ease !important;
+}
+
+.conversation-card:hover {
+  background-color: #f8fafc !important;
+}
+
+.conversation-card.active-chat-card {
+  background-color: #f1f5f9 !important;
+  border-left: 4px solid var(--primary, #C85A32) !important;
+}
+
+/* Mobile responsive drawer toggle */
+@media (max-width: 768px) {
+  .chat-split-card {
+    height: calc(100vh - 120px) !important;
+    min-height: 480px !important;
+  }
+  .chat-sidebar-wrapper {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    border-right: none !important;
+  }
+  .chat-window-wrapper {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
 
 
 
