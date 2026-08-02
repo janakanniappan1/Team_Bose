@@ -22,6 +22,7 @@ import {
   Tag,
   ShoppingBag
 } from 'lucide-react';
+import { MOCK_MESSAGES } from '../data/mockData';
 import { chatService } from '../services/chatService';
 
 export default function MessagesView({ currentUser, initialChat, onSelectProduct, onGoBack }) {
