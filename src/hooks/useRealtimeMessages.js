@@ -151,13 +151,13 @@ export function useRealtimeMessages(threadId, currentUserId, receiverId) {
 
     // Subscribe to NEW messages in THIS thread only (thread_id filter is critical)
     const channel = productSupabase
-      .channel(`realtime:messages:${threadId}`)
+      .channel(`realtime:uc_messages:${threadId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'chat_messages',
+          table: 'uc_messages',
           filter: `thread_id=eq.${threadId}`,
         },
         (payload) => {
@@ -196,7 +196,7 @@ export function useRealtimeMessages(threadId, currentUserId, receiverId) {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'chat_messages',
+          table: 'uc_messages',
           filter: `thread_id=eq.${threadId}`,
         },
         (payload) => {

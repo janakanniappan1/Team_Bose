@@ -39,21 +39,16 @@ export function useThreads(currentUserId) {
 
     // Subscribe to thread updates (last_message, unread counts, reorder)
     const channel = productSupabase
-      .channel(`threads:user:${currentUserId}`)
+      .channel(`uc_threads:user:${currentUserId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'chat_threads' },
-        () => {
-          loadThreads();
-        }
+        { event: '*', schema: 'public', table: 'uc_threads' },
+        () => { loadThreads(); }
       )
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-        () => {
-          // A new message was sent — refresh threads to reorder sidebar
-          loadThreads();
-        }
+        { event: 'INSERT', schema: 'public', table: 'uc_messages' },
+        () => { loadThreads(); }
       )
       .subscribe();
 

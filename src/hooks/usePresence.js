@@ -52,10 +52,10 @@ export function usePresence(currentUserId) {
 
     // Realtime subscription for ALL presence changes
     const channel = productSupabase
-      .channel('presence:all')
+      .channel('uc_presence:all')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_presence' },
+        { event: '*', schema: 'public', table: 'uc_presence' },
         (payload) => {
           const row = payload.new;
           if (row && row.user_id) {
