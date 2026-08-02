@@ -169,3 +169,24 @@ CREATE POLICY "Allow public select chat_messages" ON chat_messages FOR SELECT US
 CREATE POLICY "Allow public insert chat_messages" ON chat_messages FOR INSERT WITH CHECK (true);
 
 
+-- ============================================================
+-- 🔔 TABLE 7: user_notifications
+-- Stores alerts and message notifications for users
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_notifications (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  username          TEXT NOT NULL DEFAULT 'Jana K',
+  title             TEXT NOT NULL,
+  message           TEXT NOT NULL,
+  type              TEXT DEFAULT 'message', -- 'message' | 'sold' | 'price_drop' | 'offer'
+  unread            BOOLEAN DEFAULT TRUE,
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select user_notifications" ON user_notifications FOR SELECT USING (true);
+CREATE POLICY "Allow public insert user_notifications" ON user_notifications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update user_notifications" ON user_notifications FOR UPDATE USING (true);
+
+
+

@@ -1,5 +1,6 @@
 import { MOCK_MESSAGES } from '../data/mockData';
 import { productSupabase } from '../lib/supabase';
+import { notificationService } from './notificationService';
 
 const CHATS_STORAGE_KEY = 'uniswap_chat_threads';
 
@@ -156,6 +157,13 @@ export const chatService = {
           text: initialText,
           sent_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
+
+        // Add notification for new chat conversation
+        await notificationService.addNotification({
+          title: `New Message with ${product.sellerName} 💬`,
+          message: `Conversation started regarding "${product.title}". Message history saved.`,
+          type: 'message'
+        });
       }
     } catch (err) {
       console.warn('[chatService] Error creating chat in Supabase:', err);
@@ -182,6 +190,13 @@ export const chatService = {
         }
       ]
     };
+
+    // Add local notification
+    await notificationService.addNotification({
+      title: `New Message with ${product.sellerName} 💬`,
+      message: `Conversation started regarding "${product.title}". Message history saved.`,
+      type: 'message'
+    });
 
     const updated = [newThread, ...threads];
     localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updated));
