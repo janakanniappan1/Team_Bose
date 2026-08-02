@@ -7,15 +7,14 @@ import { MessagesPage } from '../pages/MessagesPage';
 // when "Chat with Seller" was clicked.
 // ============================================================
 
-export default function MessagesView({ currentUser, initialChat, onSelectProduct, onGoBack }) {
-  // initialChat is the thread object returned by startChatWithSeller
-  // We pass its .id as initialThreadId so MessagesPage opens that thread directly
-  const initialThreadId = initialChat?.id || null;
+export default function MessagesView({ currentUser, initialChat, initialThreadId, onSelectProduct, onGoBack }) {
+  const resolvedThreadId = initialThreadId || initialChat?.id || null;
 
   return (
     <MessagesPage
       currentUser={currentUser}
-      initialThreadId={initialThreadId}
+      initialThreadId={resolvedThreadId}
+      initialChat={initialChat}
       onGoBack={onGoBack}
       onOpenProduct={onSelectProduct}
     />

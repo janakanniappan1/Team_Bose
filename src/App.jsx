@@ -397,6 +397,7 @@ export default function App() {
           <MessagesView
             currentUser={currentUser}
             initialChat={activeChat}
+            initialThreadId={viewParams?.chatId || activeChat?.id}
             onSelectProduct={handleSelectProduct}
             onGoBack={handleGoBack}
           />

@@ -17,11 +17,13 @@ const getStoredNotifs = () => {
   }
 };
 
+let supabaseNotifsDisabled = false;
+
 export const notificationService = {
 
   getNotifications: async (userId) => {
     // Fetch from Supabase using user_id UUID if available
-    if (userId) {
+    if (userId && !supabaseNotifsDisabled) {
       try {
         const { data, error } = await productSupabase
           .from('user_notifications')
@@ -29,7 +31,9 @@ export const notificationService = {
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (error) {
+          supabaseNotifsDisabled = true;
+        } else if (data && data.length > 0) {
           return data.map(n => ({
             id: n.id,
             title: n.title,
@@ -42,7 +46,7 @@ export const notificationService = {
           }));
         }
       } catch (err) {
-        console.warn('[notificationService] Supabase read fallback:', err);
+        supabaseNotifsDisabled = true;
       }
     }
 

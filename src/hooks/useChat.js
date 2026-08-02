@@ -20,25 +20,53 @@ import { threadService } from '../services/threadService';
 //   opponent profile pre-loaded by threadService.getUserThreads()
 // ============================================================
 
-export function useChat(currentUser, initialThreadId = null) {
+import { productSupabase } from '../lib/supabase';
+
+export function useChat(currentUser, initialThreadId = null, initialChat = null) {
   // ── Resolve current user ID & Username ────────────────────────
   const currentUserId = currentUser?.id || currentUser?.authId || currentUser?.username || null;
   const currentUsername = currentUser?.username || null;
 
   const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId, currentUsername);
   const [activeThreadId, setActiveThreadId] = useState(initialThreadId || null);
+  const [fetchedActiveThread, setFetchedActiveThread] = useState(initialChat || null);
 
   // ── Auto-select initial thread ────────────────────────────
   useEffect(() => {
     if (initialThreadId) {
       setActiveThreadId(initialThreadId);
-    } else if (threads.length > 0 && !activeThreadId) {
-      // Don't auto-select first thread — let user choose
     }
-  }, [initialThreadId, threads]);
+  }, [initialThreadId]);
+
+  useEffect(() => {
+    if (initialChat) {
+      setFetchedActiveThread(initialChat);
+    }
+  }, [initialChat]);
+
+  // Fetch thread directly by ID if not yet present in threads list
+  useEffect(() => {
+    if (!activeThreadId) {
+      setFetchedActiveThread(null);
+      return;
+    }
+    const found = threads.find(t => t.id === activeThreadId);
+    if (found) {
+      setFetchedActiveThread(found);
+    } else {
+      productSupabase
+        .from('uc_threads')
+        .select('*')
+        .eq('id', activeThreadId)
+        .single()
+        .then(({ data }) => {
+          if (data) setFetchedActiveThread(data);
+        });
+    }
+  }, [activeThreadId, threads]);
 
   // ── Find active thread object ─────────────────────────────
-  const activeThread = threads.find(t => t.id === activeThreadId) || null;
+  const activeThread = threads.find(t => t.id === activeThreadId) || fetchedActiveThread;
 
   // ── Resolve opponent profile ─────────────────────────────
   const getOpponentProfile = useCallback((thread) => {

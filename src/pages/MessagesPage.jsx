@@ -16,7 +16,7 @@ import { MessageSquare, ArrowLeft, ShieldCheck } from 'lucide-react';
 //   - handleMakeOffer uses currentUserId + opponentProfile.id
 // ============================================================
 
-export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenProduct }) {
+export function MessagesPage({ currentUser, initialThreadId, initialChat, onGoBack, onOpenProduct }) {
   const {
     currentUserId,
     threads,
@@ -34,7 +34,7 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
     targetPresence,
     isTargetTyping,
     handleTyping,
-  } = useChat(currentUser, initialThreadId);
+  } = useChat(currentUser, initialThreadId, initialChat);
 
   const [showMobileChat, setShowMobileChat] = useState(!!initialThreadId);
   const [offerModalOpen, setOfferModalOpen] = useState(false);

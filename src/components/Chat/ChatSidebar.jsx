@@ -30,11 +30,11 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
             alt="Profile"
             style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
           />
-          <div>
-            <h4 className="font-heading m-0" style={{ fontSize: '1rem', fontWeight: '700' }}>
-              {currentUser?.full_name || currentUser?.username || 'Messages'}
+          <div style={{ overflow: 'hidden', maxWidth: '200px' }}>
+            <h4 className="font-heading m-0 text-truncate" style={{ fontSize: '0.95rem', fontWeight: '700' }}>
+              {currentUser?.full_name || currentUser?.fullName || currentUser?.username || 'Messages'}
             </h4>
-            <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+            <span className="text-muted text-truncate d-block" style={{ fontSize: '0.75rem' }}>
               {totalUnread > 0 ? `${totalUnread} unread messages` : 'Direct Messages'}
             </span>
           </div>
