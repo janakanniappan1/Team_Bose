@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { Search, MessageSquare, Edit3 } from 'lucide-react';
+import { ConversationCard } from './ConversationCard';
+
+export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUserId, currentUser }) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredThreads = threads.filter((t) => {
+    const isBuyer = t.buyer_id === currentUserId;
+    const opponent = isBuyer ? t.seller : t.buyer;
+    const opponentName = (opponent?.full_name || opponent?.username || '').toLowerCase();
+    const itemTitle = (t.item_title || '').toLowerCase();
+
+    return opponentName.includes(searchQuery.toLowerCase()) || itemTitle.includes(searchQuery.toLowerCase());
+  });
+
+  const totalUnread = threads.reduce((acc, t) => {
+    const isBuyer = t.buyer_id === currentUserId;
+    return acc + (isBuyer ? (t.buyer_unread_count || 0) : (t.seller_unread_count || 0));
+  }, 0);
+
+  return (
+    <div className="chat-sidebar border-right bg-white d-flex flex-column h-100" style={{ minWidth: '320px', maxWidth: '380px' }}>
+      
+      {/* Top Header */}
+      <div className="p-3 border-bottom d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center gap-2">
+          <img
+            src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}
+            alt="Profile"
+            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+          />
+          <div>
+            <h4 className="font-heading m-0" style={{ fontSize: '1rem', fontWeight: '700' }}>
+              {currentUser?.full_name || currentUser?.username || 'Messages'}
+            </h4>
+            <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+              {totalUnread > 0 ? `${totalUnread} unread messages` : 'Direct Messages'}
+            </span>
+          </div>
+        </div>
+
+        <button className="btn btn-ghost btn-sm icon-btn" title="New Message">
+          <Edit3 size={18} />
+        </button>
+      </div>
+
+      {/* Instant Search Box */}
+      <div className="p-3 border-bottom">
+        <div className="threads-search-box position-relative">
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '10px', color: '#94A3B8' }} />
+          <input
+            type="text"
+            className="form-input btn-sm w-100"
+            style={{ paddingLeft: '36px', borderRadius: '20px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+            placeholder="Search conversations or items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Conversation List */}
+      <div className="flex-1 overflow-auto">
+        {filteredThreads.length === 0 ? (
+          <div className="p-4 text-center text-muted">
+            <MessageSquare size={32} className="mb-2 text-slate" />
+            <p className="m-0" style={{ fontSize: '0.85rem' }}>No conversations found</p>
+          </div>
+        ) : (
+          filteredThreads.map((thread) => (
+            <ConversationCard
+              key={thread.id}
+              thread={thread}
+              currentUserId={currentUserId}
+              isActive={thread.id === activeThreadId}
+              onClick={() => onSelectThread(thread.id)}
+            />
+          ))
+        )}
+      </div>
+
+    </div>
+  );
+}

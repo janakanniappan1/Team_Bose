@@ -1,297 +1,150 @@
-import { MOCK_MESSAGES } from '../data/mockData';
 import { productSupabase } from '../lib/supabase';
-import { notificationService } from './notificationService';
-
-const CHATS_STORAGE_KEY = 'uniswap_chat_threads';
 
 export const chatService = {
   /**
-   * Fetch all chat threads & message history (Supabase DB + Local Storage)
+   * Fetch paginated messages for a thread (30 messages per batch)
    */
-  getChatThreads: async (currentUser = null) => {
-    const myName = (currentUser?.fullName || currentUser?.username || '').toLowerCase().trim();
-    const myFirstName = (currentUser?.firstName || currentUser?.fullName || '').split(' ')[0].toLowerCase().trim();
-    const myUsername = (currentUser?.username || '').toLowerCase().trim();
-
+  getMessages: async (threadId, limit = 30, beforeTimestamp = null) => {
+    if (!threadId) return [];
     try {
-      // 1. Fetch threads from Supabase
-      const { data: threadsData, error: threadsError } = await productSupabase
-        .from('chat_threads')
+      let query = productSupabase
+        .from('chat_messages')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('thread_id', threadId)
+        .order('created_at', { ascending: true })
+        .limit(limit);
 
-      if (!threadsError && threadsData && threadsData.length > 0) {
-        // Filter threads for logged in user + purge invalid self-threads
-        const validThreads = threadsData.filter((t) => {
-          const sellerName = (t.seller_name || '').toLowerCase();
-          const sellerUser = (t.seller_username || '').toLowerCase();
-          const buyerName = (t.buyer_name || '').toLowerCase();
-          const buyerUser = (t.buyer_username || '').toLowerCase();
-
-          // Purge legacy test rows with identical seller & buyer names containing 'jana k'
-          if (sellerName === buyerName && sellerName.includes('jana k')) return false;
-
-          if (!myName) return true;
-
-          return sellerName.includes(myFirstName) || sellerName.includes(myName) ||
-                 buyerName.includes(myFirstName) || buyerName.includes(myName) ||
-                 (myUsername && (sellerUser === myUsername || buyerUser === myUsername));
-        });
-
-        const threadIds = validThreads.map(t => t.id);
-        const { data: msgsData } = await productSupabase
-          .from('chat_messages')
-          .select('*')
-          .in('thread_id', threadIds.length > 0 ? threadIds : ['00000000-0000-0000-0000-000000000000'])
-          .order('created_at', { ascending: true });
-
-        const formatted = validThreads.map((t) => {
-          const threadMsgs = (msgsData || [])
-            .filter((m) => m.thread_id === t.id)
-            .map((m) => ({
-              id: m.id,
-              sender: m.sender,
-              sender_username: m.sender_username,
-              text: m.text,
-              time: m.sent_time || new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }));
-
-          let sellerName = t.seller_name || 'Jana';
-          let buyerName = t.buyer_name || 'Rizwan Ahamed';
-
-          // Normalize legacy test rows where seller equals buyer
-          if (sellerName.toLowerCase() === buyerName.toLowerCase()) {
-            if (sellerName.toLowerCase().includes('jana')) {
-              buyerName = 'Rizwan Ahamed';
-            } else {
-              sellerName = 'Jana';
-            }
-          }
-
-          return {
-            id: t.id,
-            sellerName: sellerName,
-            sellerUsername: t.seller_username || sellerName.toLowerCase().replace(/\s+/g, '_'),
-            buyerName: buyerName,
-            buyerUsername: t.buyer_username || buyerName.toLowerCase().replace(/\s+/g, '_'),
-            sellerDept: t.seller_dept || 'Campus Member',
-            sellerPhone: t.seller_phone || '',
-            sellerAvatar: t.seller_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-            buyerAvatar: t.buyer_avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-            itemTitle: t.item_title,
-            itemPrice: t.item_price,
-            itemImage: t.item_image,
-            online: t.is_online !== false,
-            lastMsgTime: t.last_msg_time || 'Recently',
-            unreadCount: t.unread_count || 0,
-            messages: threadMsgs
-          };
-        });
-
-        // Save local backup & return
-        localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(formatted));
-        return formatted;
+      if (beforeTimestamp) {
+        query = query.lt('created_at', beforeTimestamp);
       }
-    } catch (err) {
-      console.warn('[chatService] Falling back to local storage for chats:', err);
-    }
 
-    // Fallback to local storage or mock messages
-    try {
-      const saved = localStorage.getItem(CHATS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
+      const { data, error } = await query;
+      if (error) {
+        console.warn('[chatService] Fetch messages error:', error.message);
+        return [];
+      }
+      return data || [];
+    } catch (err) {
+      console.error('[chatService] Exception:', err);
       return [];
     }
   },
 
   /**
-   * Send a new message in a thread (Persists to Supabase chat_messages)
+   * Send a new realtime message
    */
-  sendMessage: async (chatId, messageText, senderUsername = 'User', recipientUsername = '') => {
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    try {
-      // 1. Insert message into Supabase chat_messages table
-      await productSupabase.from('chat_messages').insert([{
-        thread_id: chatId,
-        sender: 'user',
-        sender_username: senderUsername,
-        text: messageText,
-        sent_time: timeStr
-      }]);
-
-      // 2. Update last message time on thread
-      await productSupabase
-        .from('chat_threads')
-        .update({ last_msg_time: 'Just now' })
-        .eq('id', chatId);
-
-      // 3. Trigger live push notification for RECIPIENT user ONLY
-      if (recipientUsername && recipientUsername.toLowerCase().trim() !== senderUsername.toLowerCase().trim()) {
-        await notificationService.addNotification({
-          username: recipientUsername,
-          senderUsername: senderUsername,
-          title: `New Message from ${senderUsername} 💬`,
-          message: `"${messageText.length > 60 ? messageText.substring(0, 60) + '...' : messageText}"`,
-          type: 'message'
-        });
-      }
-    } catch (err) {
-      console.warn('[chatService] Supabase send error, updating locally:', err);
+  sendMessage: async ({
+    threadId,
+    senderId,
+    receiverId,
+    message,
+    messageType = 'text',
+    imageUrl = null,
+    metadata = {}
+  }) => {
+    if (!threadId || !senderId || !receiverId || (!message && !imageUrl)) {
+      throw new Error('Missing required message parameters.');
     }
 
-    // Update local storage thread
-    const threads = await chatService.getChatThreads();
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      sender: 'user',
-      sender_username: senderUsername,
-      text: messageText,
-      time: timeStr
-    };
-    
-    const updated = threads.map(t => {
-      if (t.id === chatId) {
-        return {
-          ...t,
-          lastMsgTime: 'Just now',
-          messages: [...t.messages, newMsg]
-        };
-      }
-      return t;
-    });
+    try {
+      // 1. Insert message into chat_messages
+      const { data: newMsg, error: msgError } = await productSupabase
+        .from('chat_messages')
+        .insert([{
+          thread_id: threadId,
+          sender_id: senderId,
+          receiver_id: receiverId,
+          message: message || (messageType === 'image' ? '📷 Photo' : 'Message'),
+          message_type: messageType,
+          image_url: imageUrl,
+          metadata,
+          is_seen: false,
+          is_delivered: true
+        }])
+        .select()
+        .single();
 
-    localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updated));
-    return updated;
+      if (msgError) throw msgError;
+
+      // 2. Fetch current thread to determine if sender is buyer or seller
+      const { data: thread } = await productSupabase
+        .from('chat_threads')
+        .select('buyer_id, buyer_unread_count, seller_unread_count')
+        .eq('id', threadId)
+        .single();
+
+      if (thread) {
+        const isSenderBuyer = thread.buyer_id === senderId;
+        const updatePayload = {
+          last_message: message || (messageType === 'image' ? '📷 Photo' : 'Message'),
+          last_sender_id: senderId,
+          last_message_time: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        if (isSenderBuyer) {
+          updatePayload.seller_unread_count = (thread.seller_unread_count || 0) + 1;
+        } else {
+          updatePayload.buyer_unread_count = (thread.buyer_unread_count || 0) + 1;
+        }
+
+        await productSupabase
+          .from('chat_threads')
+          .update(updatePayload)
+          .eq('id', threadId);
+      }
+
+      return newMsg;
+    } catch (err) {
+      console.error('[chatService] Send message error:', err);
+      throw err;
+    }
   },
 
   /**
-   * Start a new chat with a seller (Persists to Supabase chat_threads)
+   * Upload chat attachment image to Supabase Storage bucket 'chat-attachments'
    */
-  createChatWithSeller: async (product, currentUser = null) => {
-    const buyerFullName = currentUser?.fullName || currentUser?.username || 'Campus Student';
-    const buyerUsername = currentUser?.username || buyerFullName.toLowerCase().replace(/\s+/g, '_');
-    const buyerAvatar = currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80';
-
-    const sellerFullName = product.sellerName || 'Seller';
-    const sellerUsername = product.sellerUsername || sellerFullName.toLowerCase().replace(/\s+/g, '_');
-
+  uploadChatImage: async (file) => {
+    if (!file) return null;
     try {
-      const threads = await chatService.getChatThreads();
-      const existing = threads.find(t => 
-        (t.itemTitle === product.title) && 
-        ((t.sellerName === sellerFullName && t.buyerName === buyerFullName) || (t.sellerName === buyerFullName && t.buyerName === sellerFullName))
-      );
-      if (existing) return existing;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `attachments/${fileName}`;
 
-      // 1. Create thread in Supabase
-      const { data: newThreadData, error } = await productSupabase
-        .from('chat_threads')
-        .insert([{
-          seller_name: sellerFullName,
-          seller_username: sellerUsername,
-          seller_avatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-          seller_dept: product.sellerDept || 'Campus Student',
-          seller_phone: product.sellerPhone || '',
-          buyer_name: buyerFullName,
-          buyer_username: buyerUsername,
-          buyer_avatar: buyerAvatar,
-          item_title: product.title || 'Campus Item',
-          item_price: Number(product.price) || 0,
-          item_image: (product.images && product.images[0]) ? product.images[0] : '',
-          is_online: true,
-          unread_count: 0,
-          last_msg_time: 'Just now'
-        }])
-        .select();
+      const { error: uploadError } = await productSupabase.storage
+        .from('imagies')
+        .upload(filePath, file);
 
-      if (!error && newThreadData && newThreadData[0]) {
-        const threadId = newThreadData[0].id;
-        const initialText = `Hi ${sellerFullName}! Is "${product.title}" still available for pickup?`;
-
-        // Insert initial message
-        await productSupabase.from('chat_messages').insert([{
-          thread_id: threadId,
-          sender: 'user',
-          sender_username: buyerFullName,
-          text: initialText,
-          sent_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }]);
-
-        // Add notification for seller
-        await notificationService.addNotification({
-          username: sellerFullName,
-          senderUsername: buyerFullName,
-          title: `New Inquiry from ${buyerFullName} 💬`,
-          message: `Conversation started regarding "${product.title}".`,
-          type: 'message'
-        });
-
-        const createdThread = {
-          id: threadId,
-          sellerName: sellerFullName,
-          sellerUsername: sellerUsername,
-          sellerAvatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-          buyerName: buyerFullName,
-          buyerUsername: buyerUsername,
-          buyerAvatar: buyerAvatar,
-          itemTitle: product.title,
-          itemPrice: product.price,
-          itemImage: product.images ? product.images[0] : '',
-          online: true,
-          lastMsgTime: 'Just now',
-          unreadCount: 0,
-          messages: [
-            {
-              id: `msg-init-${Date.now()}`,
-              sender: 'user',
-              sender_username: buyerFullName,
-              text: initialText,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          ]
-        };
-
-        const existingLocal = await chatService.getChatThreads(currentUser);
-        const updatedLocal = [createdThread, ...existingLocal.filter(t => t.id !== threadId)];
-        localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updatedLocal));
-        return createdThread;
+      if (uploadError) {
+        console.warn('[chatService] Image upload error:', uploadError.message);
+        return null;
       }
+
+      const { data } = productSupabase.storage
+        .from('imagies')
+        .getPublicUrl(filePath);
+
+      return data?.publicUrl || null;
     } catch (err) {
-      console.warn('[chatService] Error creating chat in Supabase:', err);
+      console.error('[chatService] Image upload exception:', err);
+      return null;
     }
+  },
 
-    // Local fallback creation
-    const threads = await chatService.getChatThreads();
-    const initialText = `Hi ${sellerFullName}! Is "${product.title}" still available for pickup?`;
-    const newThread = {
-      id: `chat-${product.id}-${Date.now()}`,
-      sellerName: sellerFullName,
-      sellerUsername: sellerUsername,
-      sellerAvatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-      buyerName: buyerFullName,
-      buyerUsername: buyerUsername,
-      buyerAvatar: buyerAvatar,
-      itemTitle: product.title,
-      itemPrice: product.price,
-      itemImage: product.images ? product.images[0] : '',
-      online: true,
-      lastMsgTime: 'Just now',
-      unreadCount: 0,
-      messages: [
-        {
-          id: `msg-init-${Date.now()}`,
-          sender: 'user',
-          sender_username: buyerFullName,
-          text: initialText,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]
-    };
-
-    const updated = [newThread, ...threads];
-    localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updated));
-    return newThread;
+  /**
+   * Mark all unread received messages in a thread as seen
+   */
+  markMessagesAsSeen: async (threadId, receiverId) => {
+    if (!threadId || !receiverId) return;
+    try {
+      await productSupabase
+        .from('chat_messages')
+        .update({ is_seen: true })
+        .eq('thread_id', threadId)
+        .eq('receiver_id', receiverId)
+        .eq('is_seen', false);
+    } catch (err) {
+      console.warn('[chatService] Mark seen error:', err);
+    }
   }
 };
-
