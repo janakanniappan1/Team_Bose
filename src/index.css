@@ -2735,171 +2735,139 @@ img {
 }
 
 /* ============================================================
-   UNI-SWAP CHAT WORKSPACE — PRODUCTION LAYOUT SYSTEM
-   WhatsApp / Instagram / Discord Grade Architecture
-   
-   RULE: The layout is 100% FIXED. Message count, conversation
-   selection, user identity, images, zoom — NOTHING changes
-   the dimensions. Only content inside the scroll areas changes.
+   UNI-SWAP CHAT WORKSPACE — PRODUCTION LAYOUT SPECIFICATION
    ============================================================ */
 
-/* ── LEVEL 1: Page Container ─────────────────────────────────
-   Fills exactly from below the navbar to the bottom of viewport.
-   overflow: hidden prevents ANY browser-level scrolling. */
+/* 1. Main Page Container */
 .messages-page-container {
-  height: calc(100vh - 72px) !important;
-  height: calc(100dvh - 72px) !important;
-  max-height: calc(100vh - 72px) !important;
-  max-height: calc(100dvh - 72px) !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-sizing: border-box !important;
+    width: 100%;
+    height: calc(100dvh - 72px) !important;
+    overflow: hidden !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    min-height: 0 !important;
+    min-width: 0 !important;
 }
 
-/* ── LEVEL 2: Split Card (Sidebar | Chat) ────────────────────
-   Fills 100% of .messages-page-container. Row layout. */
+/* 2. Split Layout */
 .chat-split-card {
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  border-radius: 0 !important;
-  background: #ffffff !important;
-  border: none !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: row !important;
-  box-shadow: none !important;
-  box-sizing: border-box !important;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
+    height: 100%;
+
+    min-height: 0 !important;
+    min-width: 0 !important;
+
+    overflow: hidden !important;
 }
 
-/* ── LEVEL 3A: Sidebar Wrapper ───────────────────────────────
-   Fixed responsive width. Full height. Internal flex column. */
+/* 3. Sidebar */
 .chat-sidebar-wrapper {
-  flex: 0 0 clamp(280px, 28vw, 360px) !important;
-  width: clamp(280px, 28vw, 360px) !important;
-  min-width: 250px !important;
-  max-width: 380px !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  border-right: 1px solid #e2e8f0 !important;
-  background-color: #ffffff !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+    overflow: hidden;
 }
 
-/* ── LEVEL 3B: Chat Window Wrapper ───────────────────────────
-   Fills remaining width. Full height. Flex column:
-   [ChatHeader 64px] [ChatMessages flex-1] [MessageInput auto] */
-.chat-window-wrapper {
-  flex: 1 1 0% !important;
-  min-width: 0 !important;
-  width: auto !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  background-color: #ffffff !important;
-  position: relative !important;
-  box-sizing: border-box !important;
-}
-
-/* ── LEVEL 4A: Chat Sidebar Internal ─────────────────────────
-   Full height flex column. Header + Search at top, threads fill rest. */
-.chat-sidebar {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-}
-
-/* ── LEVEL 4B: Threads Scroll Area ───────────────────────────
-   SCROLLABLE AREA #1. Fills remaining sidebar height.
-   1 contact = top-aligned. Many contacts = internal scroll. */
+/* 4. Contact List Scroll Area */
 .chat-threads-scroll {
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-  height: auto !important;
-  width: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch !important;
-  box-sizing: border-box !important;
+    flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    display: flex;
+    flex-direction: column;
 }
 
-.conversation-card {
-  flex-shrink: 0 !important;
-  transition: background-color 0.15s ease, border-left-color 0.15s ease !important;
+/* 5. Chat Window Wrapper */
+.chat-window-wrapper {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+    min-width: 0;
+
+    overflow: hidden;
 }
 
-.conversation-card:hover {
-  background-color: #f8fafc !important;
-}
-
-.conversation-card.active-chat-card {
-  background-color: #f1f5f9 !important;
-  border-left: 4px solid var(--primary, #C85A32) !important;
-}
-
-/* ── LEVEL 5A: Chat Header ───────────────────────────────────
-   FIXED 64px. Never grows. Never shrinks. Never scrolls. */
+/* 6. Chat Header */
 .chat-header {
-  height: 64px !important;
-  min-height: 64px !important;
-  max-height: 64px !important;
-  flex: 0 0 64px !important;
-  position: relative !important;
-  z-index: 10 !important;
-  background-color: #ffffff !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+    flex: 0 0 64px;
+
+    height: 64px;
+
+    overflow: hidden;
 }
 
-/* ── LEVEL 5B: Chat Messages Body ────────────────────────────
-   SCROLLABLE AREA #2. Fills ALL space between header & input.
-   1 message = top-aligned, rest is empty background.
-   500 messages = internal scroll. Container size NEVER changes. */
+/* 7. Message Body */
 .chat-messages-body {
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  width: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch !important;
-  box-sizing: border-box !important;
+    flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-start;
+
+    padding: 20px;
 }
 
-/* ── LEVEL 5C: Message Input Bar ─────────────────────────────
-   FIXED at bottom. Never moves. Never gets pushed down. */
+/* 8. Message Input Bar */
 .message-input-bar {
-  flex: 0 0 auto !important;
-  position: relative !important;
-  z-index: 10 !important;
-  background-color: #ffffff !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
+    flex: 0 0 auto;
+
+    position: relative;
+
+    z-index: 20;
+
+    background: #fff;
 }
 
-/* ── Message Bubble Containment ──────────────────────────────
-   Bubbles never expand the chat window width. */
+/* 9. Page Overflow Protection */
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+}
+
+/* 10. Message Bubble Wrapping */
 .message-bubble {
-  max-width: clamp(260px, 72%, 75%) !important;
-  word-break: break-word !important;
-  overflow-wrap: anywhere !important;
+    max-width: 70%;
+
+    width: fit-content;
+
+    word-break: break-word;
+
+    overflow-wrap: anywhere;
+
+    white-space: pre-wrap;
 }
 
-/* ── Mobile Responsive ───────────────────────────────────────*/
+/* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
   .chat-split-card {
     height: 100% !important;

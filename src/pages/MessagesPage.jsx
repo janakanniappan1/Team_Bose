@@ -104,72 +104,68 @@ export function MessagesPage({ currentUser, initialThreadId, initialChat, onGoBa
   }
 
   return (
-    <div className="messages-page-container h-100 animate-fade-in">
-      <div className="container-fluid p-0 h-100">
+    <div className="messages-page-container animate-fade-in">
+      {/* Main Workspace Split Card */}
+      <div className="chat-split-card">
 
-        {/* Main Workspace Split Card */}
-        <div className="chat-split-card card shadow-none border-0 overflow-hidden d-flex flex-row h-100">
+        {/* Left Sidebar */}
+        <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`}>
+          <ChatSidebar
+            threads={threads}
+            activeThreadId={activeThreadId}
+            onSelectThread={handleSelectThread}
+            currentUserId={currentUserId}
+            currentUser={currentUser}
+          />
+        </div>
 
-          {/* Left Sidebar */}
-          <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`}>
-            <ChatSidebar
-              threads={threads}
-              activeThreadId={activeThreadId}
-              onSelectThread={handleSelectThread}
-              currentUserId={currentUserId}
-              currentUser={currentUser}
-            />
-          </div>
+        {/* Right Main Chat Window */}
+        <div className={`chat-window-wrapper ${!showMobileChat ? 'hide-mobile' : ''}`}>
+          {activeThread && opponentProfile ? (
+            <>
+              <ChatHeader
+                opponent={opponentProfile}
+                targetPresence={targetPresence}
+                onGoBack={() => setShowMobileChat(false)}
+                onToggleInfo={() => {}}
+                onCall={() => alert(`Connecting call to ${opponentProfile.full_name || opponentProfile.username}...`)}
+              />
 
-          {/* Right Main Chat Window */}
-          <div className={`chat-window-wrapper flex-1 d-flex flex-column ${!showMobileChat ? 'hide-mobile' : ''}`} style={{ backgroundColor: '#FFFFFF' }}>
-            {activeThread && opponentProfile ? (
-              <>
-                <ChatHeader
-                  opponent={opponentProfile}
-                  targetPresence={targetPresence}
-                  onGoBack={() => setShowMobileChat(false)}
-                  onToggleInfo={() => {}}
-                  onCall={() => alert(`Connecting call to ${opponentProfile.full_name || opponentProfile.username}...`)}
-                />
+              <ChatMessages
+                messages={messages}
+                currentUserId={currentUserId}
+                isTargetTyping={isTargetTyping}
+                opponentName={opponentProfile.full_name || opponentProfile.username}
+                hasMore={hasMore}
+                loadMoreMessages={loadOlderMessages}
+                loading={messagesLoading}
+              />
 
-                <ChatMessages
-                  messages={messages}
-                  currentUserId={currentUserId}
-                  isTargetTyping={isTargetTyping}
-                  opponentName={opponentProfile.full_name || opponentProfile.username}
-                  hasMore={hasMore}
-                  loadMoreMessages={loadOlderMessages}
-                  loading={messagesLoading}
-                />
-
-                <MessageInput
-                  onSendMessage={handleSendMessage}
-                  onSendImage={handleSendImage}
-                  onTyping={handleTyping}
-                  onMakeOffer={() => setOfferModalOpen(true)}
-                />
-              </>
-            ) : (
-              /* Empty Inbox View */
-              <div className="chat-messages-body d-flex flex-column align-items-center justify-content-center p-5 text-center">
-                <div
-                  className="mb-3 d-flex align-items-center justify-content-center mx-auto"
-                  style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#EEF2FF', color: '#C85A32' }}
-                >
-                  <MessageSquare size={40} />
-                </div>
-                <h3 className="font-heading mb-2" style={{ fontSize: '1.4rem' }}>Your Direct Conversations</h3>
-                <p className="text-muted mb-4 max-w-sm" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
-                  Send private messages and make price offers directly to student buyers and campus sellers.
-                </p>
-                <button className="btn btn-primary" onClick={onGoBack}>
-                  Explore Campus Listings
-                </button>
+              <MessageInput
+                onSendMessage={handleSendMessage}
+                onSendImage={handleSendImage}
+                onTyping={handleTyping}
+                onMakeOffer={() => setOfferModalOpen(true)}
+              />
+            </>
+          ) : (
+            /* Empty Inbox View */
+            <div className="chat-messages-body d-flex flex-column align-items-center justify-content-center p-5 text-center">
+              <div
+                className="mb-3 d-flex align-items-center justify-content-center mx-auto"
+                style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#EEF2FF', color: '#C85A32' }}
+              >
+                <MessageSquare size={40} />
               </div>
-            )}
-          </div>
-
+              <h3 className="font-heading mb-2" style={{ fontSize: '1.4rem' }}>Your Direct Conversations</h3>
+              <p className="text-muted mb-4 max-w-sm" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
+                Send private messages and make price offers directly to student buyers and campus sellers.
+              </p>
+              <button className="btn btn-primary" onClick={onGoBack}>
+                Explore Campus Listings
+              </button>
+            </div>
+          )}
         </div>
 
       </div>
