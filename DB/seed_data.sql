@@ -39,12 +39,12 @@ INSERT INTO user_images (
     'https://images.unsplash.com/photo-1611125832047-1d7ad1e8e48b?auto=format&fit=crop&w=800&q=80',
     'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80'
   ],
-  'Electronics', 'Like New',
-  'Casio fx-991EX ClassWiz Scientific Calculator',
-  950, 1695, 'Casio', 'fx-991EX ClassWiz',
-  2023, true,
-  'Upgrading to a graphing calculator for project work',
-  'Barely used Casio scientific calculator. Includes original hard case, solar backup working 100%, and quick reference card. Perfect for B.Tech exams & GATE prep.'
+  'Electronics', 'Like New (Mint Condition)',
+  'Casio fx-991CW Advanced Scientific Calculator',
+  900, 1595, 'Casio', 'fx-991CW',
+  2025, true,
+  'Completed math course requirement',
+  'Practically brand new Casio CW scientific calculator. Purchased last semester for engineering math. Includes box, manual, and protective case.'
 ),
 
 -- Product 2: Cycle
