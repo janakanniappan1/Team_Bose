@@ -134,6 +134,12 @@ export function useChat(currentUser, initialThreadId = null, initialChat = null)
     }
   }, [activeThreadId, currentUserId]);
 
+  const handleSendMessage = useCallback(async (...args) => {
+    const res = await sendMessage(...args);
+    refreshThreads();
+    return res;
+  }, [sendMessage, refreshThreads]);
+
   return {
     currentUserId,
     threads,
@@ -148,7 +154,7 @@ export function useChat(currentUser, initialThreadId = null, initialChat = null)
     loadingOlder,
     hasMore,
     sending,
-    sendMessage,
+    sendMessage: handleSendMessage,
     loadOlderMessages,
     addOptimisticMessage,
     refreshMessages,

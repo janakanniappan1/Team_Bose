@@ -164,6 +164,11 @@ export function useRealtimeMessages(threadId, currentUserId, receiverId, userUse
           const newMsg = payload.new;
           if (!newMsg || !isMounted) return;
 
+          // Auto mark as seen if this user is the receiver and viewing the open chat
+          if (currentUserId && String(newMsg.receiver_id || '').trim().toLowerCase() === String(currentUserId || '').trim().toLowerCase()) {
+            markMessagesAsSeen(threadId, currentUserId, userUsername, userFullName);
+          }
+
           setMessages(prev => {
             // Replace optimistic message if it matches (same sender + message content)
             const optimisticIdx = prev.findIndex(

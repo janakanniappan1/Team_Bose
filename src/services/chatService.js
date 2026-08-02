@@ -75,8 +75,10 @@ export async function sendChatMessage({
         updated_at: new Date().toISOString(),
       };
       if (isSenderBuyer) {
+        update.buyer_unread_count = 0;
         update.seller_unread_count = (thread.seller_unread_count || 0) + 1;
       } else {
+        update.seller_unread_count = 0;
         update.buyer_unread_count = (thread.buyer_unread_count || 0) + 1;
       }
       await productSupabase.from('uc_threads').update(update).eq('id', threadId);
