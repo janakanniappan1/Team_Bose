@@ -134,23 +134,34 @@ export const chatService = {
   /**
    * Start a new chat with a seller (Persists to Supabase chat_threads)
    */
-  createChatWithSeller: async (product) => {
+  createChatWithSeller: async (product, currentUser = null) => {
+    const buyerFullName = currentUser?.fullName || currentUser?.username || 'Campus Student';
+    const buyerUsername = currentUser?.username || buyerFullName.toLowerCase().replace(/\s+/g, '_');
+    const buyerAvatar = currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80';
+
+    const sellerFullName = product.sellerName || 'Seller';
+    const sellerUsername = product.sellerUsername || sellerFullName.toLowerCase().replace(/\s+/g, '_');
+
     try {
       const threads = await chatService.getChatThreads();
-      const existing = threads.find(t => t.itemTitle === product.title && t.sellerName === product.sellerName);
+      const existing = threads.find(t => 
+        (t.itemTitle === product.title) && 
+        ((t.sellerName === sellerFullName && t.buyerName === buyerFullName) || (t.sellerName === buyerFullName && t.buyerName === sellerFullName))
+      );
       if (existing) return existing;
 
       // 1. Create thread in Supabase
       const { data: newThreadData, error } = await productSupabase
         .from('chat_threads')
         .insert([{
-          seller_name: product.sellerName || 'Jana K',
-          seller_username: product.sellerName || 'jana_k',
+          seller_name: sellerFullName,
+          seller_username: sellerUsername,
           seller_avatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-          seller_dept: product.sellerDept || 'Student',
+          seller_dept: product.sellerDept || 'Campus Student',
           seller_phone: product.sellerPhone || '',
-          buyer_name: product.buyerName || 'Rizwan',
-          buyer_username: product.buyerUsername || 'rizwan',
+          buyer_name: buyerFullName,
+          buyer_username: buyerUsername,
+          buyer_avatar: buyerAvatar,
           item_title: product.title || 'Campus Item',
           item_price: Number(product.price) || 0,
           item_image: (product.images && product.images[0]) ? product.images[0] : '',
@@ -162,20 +173,22 @@ export const chatService = {
 
       if (!error && newThreadData && newThreadData[0]) {
         const threadId = newThreadData[0].id;
-        const initialText = `Hi ${product.sellerName}! Is "${product.title}" still available for pickup?`;
+        const initialText = `Hi ${sellerFullName}! Is "${product.title}" still available for pickup?`;
 
         // Insert initial message
         await productSupabase.from('chat_messages').insert([{
           thread_id: threadId,
           sender: 'user',
+          sender_username: buyerFullName,
           text: initialText,
           sent_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
 
-        // Add notification for new chat conversation
+        // Add notification for seller
         await notificationService.addNotification({
-          title: `New Message with ${product.sellerName} 💬`,
-          message: `Conversation started regarding "${product.title}". Message history saved.`,
+          username: sellerFullName,
+          title: `New Inquiry from ${buyerFullName} 💬`,
+          message: `Conversation started regarding "${product.title}".`,
           type: 'message'
         });
       }
@@ -185,10 +198,15 @@ export const chatService = {
 
     // Local fallback creation
     const threads = await chatService.getChatThreads();
+    const initialText = `Hi ${sellerFullName}! Is "${product.title}" still available for pickup?`;
     const newThread = {
       id: `chat-${product.id}-${Date.now()}`,
-      sellerName: product.sellerName,
-      sellerAvatar: product.sellerAvatar,
+      sellerName: sellerFullName,
+      sellerUsername: sellerUsername,
+      sellerAvatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+      buyerName: buyerFullName,
+      buyerUsername: buyerUsername,
+      buyerAvatar: buyerAvatar,
       itemTitle: product.title,
       itemPrice: product.price,
       itemImage: product.images ? product.images[0] : '',
@@ -199,18 +217,12 @@ export const chatService = {
         {
           id: `msg-init-${Date.now()}`,
           sender: 'user',
-          text: `Hi ${product.sellerName}! Is "${product.title}" still available for pickup?`,
+          sender_username: buyerFullName,
+          text: initialText,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]
     };
-
-    // Add local notification
-    await notificationService.addNotification({
-      title: `New Message with ${product.sellerName} 💬`,
-      message: `Conversation started regarding "${product.title}". Message history saved.`,
-      type: 'message'
-    });
 
     const updated = [newThread, ...threads];
     localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updated));

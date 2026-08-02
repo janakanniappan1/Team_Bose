@@ -20,7 +20,8 @@ import {
   X,
   DollarSign,
   Tag,
-  ShoppingBag
+  ShoppingBag,
+  MessageSquare
 } from 'lucide-react';
 import { MOCK_MESSAGES } from '../data/mockData';
 import { chatService } from '../services/chatService';
@@ -90,67 +91,48 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     }
   }, [initialChat]);
 
-  const fallbackThread = {
-    id: 'default-chat',
-    sellerName: 'Rizwan Ahamed',
-    buyerName: 'Jana K',
-    itemTitle: 'INFINIX NOTE 50s',
-    itemPrice: 15999,
-    itemImage: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=300&q=80',
-    online: true,
-    lastMsgTime: 'Just now',
-    messages: [
-      { id: 'm-def-1', sender: 'seller', sender_username: 'Rizwan Ahamed', text: 'Hi! Welcome to Uniswap Safe Campus Chat.', time: '10:00 AM' }
-    ]
-  };
-
-  // Dynamic Active Thread resolution:
-  // Find first thread where contact is an OPPONENT user (not self)
-  const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'Jana').split(' ')[0].toLowerCase();
+  const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'User').split(' ')[0].toLowerCase();
   
   const validOpponentThread = chatThreads.find(t => {
     const sellerLower = (t.sellerName || '').toLowerCase();
     return !sellerLower.includes(myFirstNameLower);
   });
 
-  const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0] || fallbackThread;
+  const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0];
 
-  // Helper: Get the OTHER participant's name for WhatsApp view (so Jana sees Rizwan, and Rizwan sees Jana)
+  // Helper: Get the OTHER participant's name for WhatsApp / Instagram Direct view
   const getContactInfo = (thread) => {
-    if (!thread) return { name: 'Rizwan Ahamed', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' };
+    if (!thread) return { name: 'Campus Student', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
     
-    const myFullName = (currentUser?.fullName || currentUser?.username || 'Jana').trim();
+    const myFullName = (currentUser?.fullName || currentUser?.username || 'User').trim();
     const myFullNameLower = myFullName.toLowerCase();
     const myFirstNameLower = myFullName.split(' ')[0].toLowerCase();
     const myUsernameLower = (currentUser?.username || '').toLowerCase();
 
-    const sellerNameLower = (thread.sellerName || '').toLowerCase();
-    const sellerUserLower = (thread.sellerUsername || '').toLowerCase();
+    const sellerName = thread.sellerName || 'Seller';
+    const sellerUsername = (thread.sellerUsername || '').toLowerCase();
 
-    // 1. Check if I am the seller
-    const isSellerMe = (sellerNameLower && sellerNameLower.includes(myFirstNameLower)) ||
-                       (sellerNameLower && myFullNameLower && sellerNameLower.includes(myFullNameLower)) ||
-                       (sellerUserLower && myUsernameLower && sellerUserLower === myUsernameLower);
+    const buyerName = thread.buyerName || 'Buyer';
 
-    let contactName = isSellerMe ? (thread.buyerName || 'Rizwan Ahamed') : (thread.sellerName || 'Rizwan Ahamed');
+    // 1. Check if logged in user is the seller
+    const isSellerMe = (sellerName.toLowerCase().includes(myFirstNameLower)) ||
+                       (sellerName.toLowerCase().includes(myFullNameLower)) ||
+                       (sellerUsername && myUsernameLower && sellerUsername === myUsernameLower);
 
-    // 2. ABSOLUTE SAFEGUARD: If the calculated contact name equals MY name, force switch to opponent name!
-    const contactLower = contactName.toLowerCase();
-    if (contactLower.includes(myFirstNameLower) || contactLower.includes(myFullNameLower)) {
-      if (isSellerMe) {
-        contactName = 'Rizwan Ahamed';
-      } else {
-        contactName = (thread.buyerName && !thread.buyerName.toLowerCase().includes(myFirstNameLower)) ? thread.buyerName : 'Rizwan Ahamed';
-      }
+    let contactName = isSellerMe ? buyerName : sellerName;
+
+    // 2. Safeguard: Ensure contact name never equals logged-in user's name
+    if (contactName.toLowerCase().includes(myFirstNameLower)) {
+      contactName = isSellerMe ? (buyerName || 'Student') : (sellerName || 'Seller');
     }
 
-    const contactAvatar = (isSellerMe && thread.buyerAvatar) ? thread.buyerAvatar : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80');
+    const contactAvatar = isSellerMe ? (thread.buyerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80') : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80');
 
     return {
       name: contactName,
       avatar: contactAvatar,
-      dept: isSellerMe ? 'Buyer / Student' : (thread.sellerDept || 'Computer Science & Engineering'),
-      phone: isSellerMe ? '+91 98123 45678' : (thread.sellerPhone || '+91 98765 43210')
+      dept: isSellerMe ? 'Buyer / Student' : (thread.sellerDept || 'Campus Student'),
+      phone: isSellerMe ? '' : (thread.sellerPhone || '')
     };
   };
 
@@ -337,6 +319,36 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     t.sellerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.itemTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (!chatThreads || chatThreads.length === 0) {
+    return (
+      <div className="messages-page-container animate-fade-in py-5 text-center">
+        <div className="container" style={{ maxWidth: '600px' }}>
+          
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <button className="btn btn-outline btn-sm" onClick={onGoBack}>
+              <ArrowLeft size={16} />
+              <span>Back to Marketplace</span>
+            </button>
+          </div>
+
+          <div className="card p-5 glass-panel text-center">
+            <div className="empty-chat-icon-wrap mx-auto mb-3" style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <MessageSquare size={40} className="text-primary" />
+            </div>
+            <h3 className="font-heading mb-2" style={{ fontSize: '1.4rem' }}>Your Campus Direct Inbox</h3>
+            <p className="text-muted mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.5' }}>
+              You don't have any active conversations yet. Explore campus items and click <strong>"Chat with Seller"</strong> on any listing to start a direct real-time conversation!
+            </p>
+            <button className="btn btn-primary mx-auto" onClick={onGoBack}>
+              Explore Marketplace Items
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="messages-page-container animate-fade-in py-3">

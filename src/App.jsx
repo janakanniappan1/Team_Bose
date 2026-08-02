@@ -194,7 +194,7 @@ export default function App() {
       return;
     }
 
-    const thread = await startChatWithSeller(product);
+    const thread = await startChatWithSeller(product, currentUser);
     navigateToView('messages', { chatId: thread.id });
     showToast(`Opening chat with ${product.sellerName}...`, 'info');
   };

@@ -26,8 +26,8 @@ export function useChats(initialChat = null) {
     }
   };
 
-  const startChatWithSeller = async (product) => {
-    const thread = await chatService.createChatWithSeller(product);
+  const startChatWithSeller = async (product, currentUser = null) => {
+    const thread = await chatService.createChatWithSeller(product, currentUser);
     setActiveChat(thread);
     return thread;
   };
