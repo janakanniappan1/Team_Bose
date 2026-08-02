@@ -137,7 +137,7 @@ def main():
             "department"       : department,
             "pickup_preference": pickup_preference,
             "status"           : "Pending Approval"
-        }).execute()
+        }).select().execute()
 
         # ----- Success -----
         print()
