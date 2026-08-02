@@ -120,8 +120,8 @@ export const authService = {
       }
 
       const user = data[0];
-      // full_name from DB column (if exists) → local name map → fallback to username
-      const fullName = user.full_name || getNameLocally(username) || username;
+      // full_name from DB column (if exists) → local name map → capitalized username
+      const fullName = user.full_name || getNameLocally(username) || (username.charAt(0).toUpperCase() + username.slice(1));
 
       return {
         data: {

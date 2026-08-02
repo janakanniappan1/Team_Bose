@@ -119,31 +119,39 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
   const getContactInfo = (thread) => {
     if (!thread) return { name: 'Rizwan Ahamed', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' };
     
-    const myFullNameLower = (currentUser?.fullName || '').toLowerCase();
+    const myFullName = (currentUser?.fullName || currentUser?.username || 'Jana').trim();
+    const myFullNameLower = myFullName.toLowerCase();
+    const myFirstNameLower = myFullName.split(' ')[0].toLowerCase();
     const myUsernameLower = (currentUser?.username || '').toLowerCase();
 
     const sellerNameLower = (thread.sellerName || '').toLowerCase();
     const sellerUserLower = (thread.sellerUsername || '').toLowerCase();
 
+    // 1. Check if I am the seller
     const isSellerMe = (sellerNameLower && sellerNameLower.includes(myFirstNameLower)) ||
                        (sellerNameLower && myFullNameLower && sellerNameLower.includes(myFullNameLower)) ||
                        (sellerUserLower && myUsernameLower && sellerUserLower === myUsernameLower);
 
-    if (isSellerMe) {
-      return {
-        name: thread.buyerName || 'Rizwan Ahamed',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-        dept: 'Buyer / Student',
-        phone: '+91 98123 45678'
-      };
-    } else {
-      return {
-        name: thread.sellerName || 'Campus Seller',
-        avatar: thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-        dept: thread.sellerDept || 'Computer Science & Engineering',
-        phone: thread.sellerPhone || '+91 98765 43210'
-      };
+    let contactName = isSellerMe ? (thread.buyerName || 'Rizwan Ahamed') : (thread.sellerName || 'Rizwan Ahamed');
+
+    // 2. ABSOLUTE SAFEGUARD: If the calculated contact name equals MY name, force switch to opponent name!
+    const contactLower = contactName.toLowerCase();
+    if (contactLower.includes(myFirstNameLower) || contactLower.includes(myFullNameLower)) {
+      if (isSellerMe) {
+        contactName = 'Rizwan Ahamed';
+      } else {
+        contactName = (thread.buyerName && !thread.buyerName.toLowerCase().includes(myFirstNameLower)) ? thread.buyerName : 'Rizwan Ahamed';
+      }
     }
+
+    const contactAvatar = (isSellerMe && thread.buyerAvatar) ? thread.buyerAvatar : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80');
+
+    return {
+      name: contactName,
+      avatar: contactAvatar,
+      dept: isSellerMe ? 'Buyer / Student' : (thread.sellerDept || 'Computer Science & Engineering'),
+      phone: isSellerMe ? '+91 98123 45678' : (thread.sellerPhone || '+91 98765 43210')
+    };
   };
 
   const activeContact = getContactInfo(activeThread);

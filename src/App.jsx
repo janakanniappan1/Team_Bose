@@ -57,9 +57,10 @@ export default function App() {
     authService.getCurrentUser().then((savedUser) => {
       if (savedUser) {
         setIsLoggedIn(true);
-        const displayName = savedUser.full_name || savedUser.username || 'User';
+        const displayName = savedUser.full_name || (savedUser.username ? savedUser.username.charAt(0).toUpperCase() + savedUser.username.slice(1) : 'User');
         setCurrentUser((prev) => ({
           ...prev,
+          username: savedUser.username || prev.username,
           fullName: displayName,
           firstName: displayName.split(' ')[0],
           lastName: displayName.split(' ').slice(1).join(' ') || prev.lastName,
@@ -119,9 +120,10 @@ export default function App() {
     localStorage.setItem(SESSION_KEY, 'true');
     // Map Supabase user's full_name (set at signup) onto the currentUser shape
     if (authUser) {
-      const displayName = authUser.full_name || authUser.username || 'User';
+      const displayName = authUser.full_name || (authUser.username ? authUser.username.charAt(0).toUpperCase() + authUser.username.slice(1) : 'User');
       setCurrentUser((prev) => ({
         ...prev,
+        username: authUser.username || prev.username,
         fullName: displayName,
         firstName: displayName.split(' ')[0],
         lastName: displayName.split(' ').slice(1).join(' ') || prev.lastName,
