@@ -1,4 +1,5 @@
 import { productSupabase } from '../lib/supabase';
+import { notificationService } from './notificationService';
 
 // ============================================================
 // chatService — Uses uc_ prefixed tables (zero conflict)
@@ -84,6 +85,17 @@ export async function sendChatMessage({
       await productSupabase.from('uc_threads').update(update).eq('id', threadId);
     }
   } catch (e) { console.warn('[chatService] thread update (non-fatal):', e); }
+
+  // Dispatch realtime notification to receiver
+  try {
+    await notificationService.addNotification({
+      receiverUserId: rIdStr,
+      senderUserId: sIdStr,
+      title: 'New Message Received 💬',
+      message: displayMessage,
+      type: 'message'
+    });
+  } catch (e) { console.warn('[chatService] notification insert (non-fatal):', e); }
 
   return newMsg;
 }

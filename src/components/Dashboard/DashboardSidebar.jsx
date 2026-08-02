@@ -25,8 +25,8 @@ export default function DashboardSidebar({
   onSignOut,
   onGoToSell,
   currentUser,
-  unreadMessages = 1,
-  unreadNotifs = 2
+  unreadMessages = 0,
+  unreadNotifs = 0
 }) {
   const MAIN_NAV = [
     { id: 'overview', label: 'Dashboard Home', icon: <LayoutDashboard size={18} /> },

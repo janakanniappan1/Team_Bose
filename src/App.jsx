@@ -50,7 +50,7 @@ export default function App() {
   const { products, addProduct, removeProduct, updateProductStatus, changePrice } = useProducts();
   const { wishlist, toggleWishlist, isWishlisted } = useWishlist();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, savedSearches, removeSavedSearch, renameSavedSearch } = useSearch();
-  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications(currentUser);
+  const { notifications, unreadCount, markAllRead, clearAll, deleteNotification } = useNotifications(currentUser);
   const { activeChat, setActiveChat, startChatWithSeller } = useChats();
 
   // Restore session on page load (check if user was already logged in)
@@ -405,6 +405,7 @@ export default function App() {
             notifications={notifications}
             onMarkAllRead={markAllRead}
             onClearAllNotifications={clearAll}
+            onDeleteNotification={deleteNotification}
           />
         )}
 
@@ -442,6 +443,7 @@ export default function App() {
         onClose={() => setNotificationsOpen(false)}
         notifications={notifications}
         onMarkAllRead={markAllRead}
+        onDeleteNotification={deleteNotification}
       />
 
       {/* Toast Feedback */}

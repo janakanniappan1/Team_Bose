@@ -61,7 +61,8 @@ export default function UserDashboardPage({
   onSearchAgain,
   notifications = [],
   onMarkAllRead,
-  onClearAllNotifications
+  onClearAllNotifications,
+  onDeleteNotification
 }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'profile', 'listings', 'wishlist', 'messages', 'purchases', 'offers', 'notifications', 'reviews', 'saved-searches', 'recent', 'settings', 'help'
   const [purchases, setPurchases] = useState([]);
@@ -107,6 +108,7 @@ export default function UserDashboardPage({
             onSignOut={onSignOut}
             onGoToSell={onGoToSell}
             currentUser={user}
+            unreadNotifs={notifications.filter(n => n.unread).length}
           />
 
           {/* 2. Main Executive Content Window */}
@@ -316,6 +318,7 @@ export default function UserDashboardPage({
             {/* MESSAGES */}
             {activeTab === 'messages' && (
               <MessagesView
+                currentUser={user}
                 onSelectProduct={onSelectProduct}
                 onGoBack={() => setActiveTab('overview')}
               />
@@ -469,7 +472,18 @@ export default function UserDashboardPage({
                           </div>
                         </div>
 
-                        {n.unread && <span className="badge badge-primary rounded-circle">New</span>}
+                        <div className="d-flex align-items-center gap-2">
+                          {n.unread && <span className="badge badge-primary rounded-circle">New</span>}
+                          {onDeleteNotification && (
+                            <button
+                              className="btn btn-sm btn-ghost text-muted p-1"
+                              title="Delete notification"
+                              onClick={() => onDeleteNotification(n.id)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

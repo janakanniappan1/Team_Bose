@@ -7,11 +7,11 @@ import {
   TrendingDown, 
   Sparkles, 
   Clock, 
-  Check 
+  Check,
+  Trash2
 } from 'lucide-react';
 
-
-export default function NotificationsModal({ isOpen, onClose, notifications, onMarkAllRead }) {
+export default function NotificationsModal({ isOpen, onClose, notifications, onMarkAllRead, onDeleteNotification }) {
   if (!isOpen) return null;
 
   const notifIcons = {
@@ -43,24 +43,47 @@ export default function NotificationsModal({ isOpen, onClose, notifications, onM
         </div>
 
         <div className="notif-list">
-          {notifications.map((notif) => (
-            <div 
-              key={notif.id} 
-              className={`notif-item ${notif.unread ? 'unread' : ''}`}
-            >
-              <div className="notif-icon-circle">
-                {notifIcons[notif.type] || <Bell size={18} />}
-              </div>
-
-              <div className="notif-body">
-                <h4 className="notif-title">{notif.title}</h4>
-                <p className="notif-msg">{notif.message}</p>
-                <span className="notif-time"><Clock size={12} /> {notif.time}</span>
-              </div>
-
-              {notif.unread && <span className="unread-dot"></span>}
+          {notifications.length === 0 ? (
+            <div className="p-4 text-center text-muted">
+              <Bell size={32} className="mb-2 text-slate-300 mx-auto" />
+              <p className="mb-0">No notifications yet!</p>
             </div>
-          ))}
+          ) : (
+            notifications.map((notif) => (
+              <div 
+                key={notif.id} 
+                className={`notif-item ${notif.unread ? 'unread' : ''} d-flex align-items-center justify-content-between`}
+              >
+                <div className="d-flex align-items-center gap-3 flex-1 min-w-0">
+                  <div className="notif-icon-circle">
+                    {notifIcons[notif.type] || <Bell size={18} />}
+                  </div>
+
+                  <div className="notif-body flex-1 min-w-0">
+                    <h4 className="notif-title text-truncate">{notif.title}</h4>
+                    <p className="notif-msg text-truncate mb-1">{notif.message}</p>
+                    <span className="notif-time"><Clock size={12} /> {notif.time}</span>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  {notif.unread && <span className="unread-dot"></span>}
+                  {onDeleteNotification && (
+                    <button
+                      className="btn btn-sm btn-ghost text-muted p-1"
+                      title="Remove notification"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteNotification(notif.id);
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

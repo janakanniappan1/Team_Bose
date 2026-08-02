@@ -138,4 +138,22 @@ export const notificationService = {
     localStorage.setItem(NOTIFS_STORAGE_KEY, JSON.stringify([newNotif, ...current]));
     return newNotif;
   },
+
+  deleteNotification: async (notifId, userId) => {
+    try {
+      if (notifId) {
+        await productSupabase
+          .from('user_notifications')
+          .delete()
+          .eq('id', notifId);
+      }
+    } catch (err) {
+      console.warn('[notificationService] Supabase delete notification fallback:', err);
+    }
+
+    const current = getStoredNotifs();
+    const updated = current.filter(n => n.id !== notifId);
+    localStorage.setItem(NOTIFS_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  },
 };
