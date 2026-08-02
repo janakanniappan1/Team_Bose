@@ -184,14 +184,18 @@ export default function App() {
     navigateToView('search', { query: term, category });
   };
 
-  // Start Chat handler — UUID-based self-chat guard
+  // Start Chat handler — flexible seller resolution & self-chat guard
   const handleStartChat = async (product) => {
-    // Use UUID for identity comparison — never username strings
-    const myId = currentUser?.id || currentUser?.authId;
-    const sellerId = product?.sellerId || product?.seller_id;
+    const myId = currentUser?.id || currentUser?.authId || currentUser?.username;
+    const sellerId = product?.sellerId || product?.seller_id || product?.sellerName || product?.seller_name || product?.username || product?.seller_username;
 
-    // Self-chat guard: compare UUIDs
-    if (myId && sellerId && myId === sellerId) {
+    const cleanMyId = String(myId || '').trim().toLowerCase();
+    const cleanSellerId = String(sellerId || '').trim().toLowerCase();
+    const cleanUsername = String(currentUser?.username || '').trim().toLowerCase();
+    const cleanFullName = String(currentUser?.full_name || '').trim().toLowerCase();
+
+    // Self-chat guard
+    if (cleanMyId && cleanSellerId && (cleanMyId === cleanSellerId || (cleanUsername && cleanUsername === cleanSellerId) || (cleanFullName && cleanFullName === cleanSellerId))) {
       showToast('⚠️ This is your own listing. You cannot chat with yourself.', 'info');
       return;
     }
