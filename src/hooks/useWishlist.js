@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { wishlistService } from '../services/wishlistService';
 
 export function useWishlist() {
-  const [wishlist, setWishlist] = useState(() => wishlistService.getWishlist());
+  const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    setWishlist(wishlistService.getWishlist());
+    setWishlist([]);
+    wishlistService.clearWishlist();
   }, []);
 
   const toggleWishlist = (productId) => {

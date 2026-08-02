@@ -86,9 +86,8 @@ export default function HomePage({
     return counts;
   }, [products]);
 
-  const featuredProducts = products.filter((p) => p.featured || p.badge === 'Just Listed');
-  const popularProducts = products.filter((p) => p.popular || p.price < 2000);
-  const recommendedProducts = products.filter((p) => p.recommended || p.category === 'electronics');
+  const featuredProducts = products;
+  const recommendedProducts = products;
 
   return (
     <div className="home-page-container animate-fade-in">

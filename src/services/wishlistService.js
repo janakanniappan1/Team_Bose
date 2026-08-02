@@ -8,8 +8,13 @@ export const wishlistService = {
    */
   getWishlist() {
     try {
+      // Always reset wishlist to 0 / empty array by default
       const stored = localStorage.getItem(WISHLIST_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) {
+        localStorage.setItem(WISHLIST_KEY, JSON.stringify([]));
+        return [];
+      }
+      return JSON.parse(stored);
     } catch {
       return [];
     }
@@ -32,5 +37,13 @@ export const wishlistService = {
 
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
     return { wishlist: updated, isAdded };
+  },
+
+  /**
+   * Clear all wishlist items to reset count to 0
+   */
+  clearWishlist() {
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify([]));
+    return [];
   }
 };
