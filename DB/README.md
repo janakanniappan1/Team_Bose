@@ -1,128 +1,105 @@
-# 🗄️ UniSwap Campus Marketplace — Database Folder
+# 🗄️ UniSwap Campus Marketplace — Dual Database Setup
 
-This folder contains all database-related files for the **UniSwap Campus Marketplace** project.
+This project uses **2 separate Supabase databases**:
+
+1. **🔐 Database 1: Authentication & User Accounts** (`jumprmlmxzwxsabjvgtd.supabase.co`)
+2. **🛍️ Database 2: Product Listings & Media Uploads** (`drqieumjptfmzhizjzge.supabase.co`)
 
 ---
 
-## 📁 Folder Structure
+## 📁 DB Folder Structure
 
 ```
 DB/
-├── schema.sql          → SQL to CREATE all Supabase tables
-├── seed_data.sql       → Sample data to INSERT into tables
-├── upload_product.py   → Python script to upload products via terminal
-└── README.md           → This file
+├── schema.sql          → SQL schemas for both Database 1 & Database 2
+├── seed_data.sql       → Sample seed data for both databases
+├── upload_product.py   → Python script (connects to Database 2 for uploads)
+└── README.md           → This documentation file
 ```
 
 ---
 
-## 🔵 Supabase Setup Guide
+## 🔐 Database 1: Authentication (`jumprmlmxzwxsabjvgtd.supabase.co`)
 
-### Step 1 — Create Tables
-1. Go to [Supabase Dashboard](https://supabase.com) → Your Project
-2. Click **SQL Editor** → **New Query**
-3. Paste the contents of `schema.sql` and click **Run**
+> **Used by**: Frontend React App (`authService.js` via `.env`)
 
-### Step 2 — Insert Sample Data
-1. Open **SQL Editor** → **New Query**
-2. Paste the contents of `seed_data.sql` and click **Run**
+### Connection Credentials
+- **URL**: `https://jumprmlmxzwxsabjvgtd.supabase.co`
+- **Key**: Configured in `.env` as `VITE_SUPABASE_ANON_KEY`
 
-### Step 3 — Create Storage Bucket
-1. Go to **Storage** → **New Bucket**
-2. Name: `imagies`
-3. Toggle: **Public bucket** → ON
-4. Click **Create**
-
----
-
-## 📊 Tables Overview
-
-### `users` Table
-| Column | Type | Notes |
-|--------|------|-------|
-| id | UUID | Auto-generated primary key |
-| username | TEXT | Unique login name |
-| password | TEXT | Plain text (upgrade to hashed for production) |
-| full_name | TEXT | Display name |
-| created_at | TIMESTAMPTZ | Auto timestamp |
-
-### `user_images` Table
-| Column | Type | Notes |
-|--------|------|-------|
-| id | UUID | Auto-generated primary key |
-| username | TEXT | Seller's username |
-| object_names | TEXT[] | Array of 3 storage file names |
-| image_urls | TEXT[] | Array of 3 public image URLs |
-| Category | TEXT | Electronics, Books, Cycles, etc. |
-| condition | TEXT | Like New, Good, Fair, etc. |
-| product_name | TEXT | Name of the item |
-| selling_price | INTEGER | Price in ₹ |
-| original_price | INTEGER | MRP in ₹ |
-| brand | TEXT | Brand name |
-| model | TEXT | Model number/name |
-| purchase_year | INTEGER | Year item was purchased |
-| negotiable | BOOLEAN | true / false |
-| reason | TEXT | Why selling |
-| description | TEXT | Full product description |
-| created_at | TIMESTAMPTZ | Auto timestamp |
-
----
-
-## 🐍 Upload Product via Python Script
-
-### Install dependency
-```bash
-pip install supabase
+### Table: `users`
+```sql
+CREATE TABLE IF NOT EXISTS users (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  username   TEXT UNIQUE NOT NULL,
+  password   TEXT NOT NULL,
+  full_name  TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-### Run the script
+---
+
+## 🛍️ Database 2: Product Listings & Storage (`drqieumjptfmzhizjzge.supabase.co`)
+
+> **Used by**: Product upload Python script (`upload_product.py`) & Product storage
+
+### Connection Credentials
+- **URL**: `https://drqieumjptfmzhizjzge.supabase.co`
+- **Key**: `sb_publishable_mCSK_djyZveTJsS4NLuKlw_0SNRIHq0`
+- **Storage Bucket**: `imagies` (Public bucket for images)
+
+### Table: `user_images`
+```sql
+CREATE TABLE IF NOT EXISTS user_images (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  username          TEXT NOT NULL,
+  audience          TEXT DEFAULT 'students',
+  object_names      TEXT[],
+  image_urls        TEXT[],
+  video_url         TEXT,
+  "Category"        TEXT,
+  condition         TEXT,
+  product_name      TEXT,
+  selling_price     INTEGER,
+  original_price    INTEGER,
+  negotiable        BOOLEAN DEFAULT FALSE,
+  brand             TEXT,
+  model             TEXT,
+  purchase_year     INTEGER,
+  reason            TEXT,
+  description       TEXT,
+  hostel            TEXT,
+  department        TEXT,
+  pickup_preference TEXT,
+  status            TEXT DEFAULT 'Pending Approval',
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+## 🔵 Setup Instructions for Both Databases
+
+### For Database 1 (Authentication):
+1. Log into Supabase → Select `jumprmlmxzwxsabjvgtd` project.
+2. Go to **SQL Editor** → **New Query**.
+3. Run the `users` table section from `schema.sql`.
+
+### For Database 2 (Product Sales & Uploads):
+1. Log into Supabase → Select `drqieumjptfmzhizjzge` project.
+2. Go to **SQL Editor** → **New Query**.
+3. Run the `user_images` table section from `schema.sql`.
+4. Go to **Storage** → Create a public bucket named **`imagies`**.
+
+---
+
+## 🐍 Running the Upload Script
+
+To upload products to Database 2 via terminal:
+
 ```bash
 python DB/upload_product.py
 ```
 
-### You will be prompted for:
-```
-Username             :
-Category             :
-Condition            :
-Product Name         :
-Selling Price (₹)    :
-Original Price (₹)   :
-Brand                :
-Model                :
-Purchase Year        :
-Negotiable (yes/no)  :
-Reason for Selling   :
-Description          :
-
-Image 1 Path         : C:\Users\...\image1.jpg
-Image 2 Path         : C:\Users\...\image2.jpg
-Image 3 Path         : C:\Users\...\image3.jpg
-```
-
----
-
-## 🔑 Supabase Credentials
-
-| Key | Value |
-|-----|-------|
-| Project URL | `https://jumprmlmxzwxsabjvgtd.supabase.co` |
-| Anon Key | Stored in `.env` as `VITE_SUPABASE_ANON_KEY` |
-
-> ⚠️ Never commit real keys to public repositories.
-
----
-
-## 🏗️ Architecture
-
-```
-Frontend (React/Vite)
-    └── src/lib/supabase.js     ← Supabase JS client
-        └── src/services/
-            ├── authService.js  ← users table
-            ├── productService.js (localStorage for now)
-            └── chatService.js  (localStorage for now)
-
-Backend Scripts
-    └── DB/upload_product.py    ← Direct Python → Supabase insert
-```
+It will prompt for product details & 3–8 image file paths, then automatically upload images to the `imagies` bucket and insert the product row into Database 2!

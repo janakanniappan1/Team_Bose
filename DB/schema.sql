@@ -1,10 +1,13 @@
 -- ============================================================
--- UniSwap Campus Marketplace — Supabase Database Schema
+-- UniSwap Campus Marketplace — Supabase Dual Database Schemas
 -- ============================================================
 
--- TABLE 1: users
--- Used for login, signup, password reset
 -- ============================================================
+-- 🔐 DATABASE 1: AUTHENTICATION DATABASE
+-- Project URL : https://jumprmlmxzwxsabjvgtd.supabase.co
+-- Used by     : React Frontend (authService.js via .env)
+-- ============================================================
+
 CREATE TABLE IF NOT EXISTS users (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   username   TEXT UNIQUE NOT NULL,
@@ -13,20 +16,20 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security
+-- Enable Row Level Security & Policies for Database 1
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Allow public read/insert (for login & signup)
 CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public select" ON users FOR SELECT USING (true);
 CREATE POLICY "Allow password update" ON users FOR UPDATE USING (true);
 
 
 -- ============================================================
--- TABLE 2: user_images
--- Used by upload_product.py and SellProductPage.jsx to store product listings
--- Columns match the Sell Product form exactly
+-- 🛍️ DATABASE 2: PRODUCT LISTINGS & STORAGE DATABASE
+-- Project URL : https://drqieumjptfmzhizjzge.supabase.co
+-- Used by     : Python Upload Script (upload_product.py)
+-- Bucket      : imagies (Public)
 -- ============================================================
+
 CREATE TABLE IF NOT EXISTS user_images (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
@@ -64,20 +67,7 @@ CREATE TABLE IF NOT EXISTS user_images (
   created_at        TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security
+-- Enable Row Level Security & Policies for Database 2
 ALTER TABLE user_images ENABLE ROW LEVEL SECURITY;
-
--- Allow public read/insert for products
 CREATE POLICY "Allow public insert" ON user_images FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public select" ON user_images FOR SELECT USING (true);
-
-
--- ============================================================
--- STORAGE BUCKET: imagies
--- Public bucket for product images
--- ============================================================
--- Run in Supabase Dashboard > Storage > New Bucket:
---   Name       : imagies
---   Public     : true
---   File size  : 10MB max
---   Allowed    : image/jpeg, image/png, image/webp
