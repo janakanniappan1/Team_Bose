@@ -4,6 +4,7 @@ import { useRealtimeMessages } from './useRealtimeMessages';
 import { usePresence } from './usePresence';
 import { useTyping } from './useTyping';
 import { threadService } from '../services/threadService';
+import { markMessagesAsSeen } from '../services/chatService';
 
 // ============================================================
 // useChat — Pure UUID-based orchestrator hook
@@ -104,7 +105,16 @@ export function useChat(currentUser, initialThreadId = null, initialChat = null)
     loadOlderMessages,
     addOptimisticMessage,
     refreshMessages,
-  } = useRealtimeMessages(activeThreadId, currentUserId, opponentId);
+  } = useRealtimeMessages(activeThreadId, currentUserId, opponentId, currentUsername, currentFullName);
+
+  // Auto mark messages as seen and refresh unread badges when switching threads
+  useEffect(() => {
+    if (activeThreadId && currentUserId) {
+      markMessagesAsSeen(activeThreadId, currentUserId, currentUsername, currentFullName).then(() => {
+        refreshThreads();
+      });
+    }
+  }, [activeThreadId, currentUserId, currentUsername, currentFullName, refreshThreads]);
 
   // ── Presence (global map) ─────────────────────────────────
   const { presenceMap, getPresenceForUser } = usePresence(currentUserId);

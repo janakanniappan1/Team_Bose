@@ -15,7 +15,7 @@ import { productSupabase } from '../lib/supabase';
 //   - Duplicate prevention via ID and isOptimistic matching
 // ============================================================
 
-export function useRealtimeMessages(threadId, currentUserId, receiverId) {
+export function useRealtimeMessages(threadId, currentUserId, receiverId, userUsername = null, userFullName = null) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -40,16 +40,16 @@ export function useRealtimeMessages(threadId, currentUserId, receiverId) {
       setMessages(data);
       setHasMore(data.length === 30);
 
-      // Auto mark received messages as seen
+      // Auto mark received messages as seen & reset unread count
       if (currentUserId) {
-        await markMessagesAsSeen(threadId, currentUserId);
+        await markMessagesAsSeen(threadId, currentUserId, userUsername, userFullName);
       }
     } catch (err) {
       console.error('[useRealtimeMessages] loadInitialMessages error:', err);
     } finally {
       setLoading(false);
     }
-  }, [threadId, currentUserId]);
+  }, [threadId, currentUserId, userUsername, userFullName]);
 
   // ── Load older messages (infinite scroll upward) ──────────
   const loadOlderMessages = useCallback(async () => {

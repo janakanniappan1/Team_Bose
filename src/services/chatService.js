@@ -98,14 +98,33 @@ export async function uploadChatImage(file) {
   } catch (err) { console.error('[chatService] upload exception:', err); return null; }
 }
 
-export async function markMessagesAsSeen(threadId, currentUserId) {
+export async function markMessagesAsSeen(threadId, currentUserId, userUsername = null, userFullName = null) {
   if (!threadId || !currentUserId) return;
   try {
+    const cIdStr = String(currentUserId).trim();
+    const cUserStr = String(userUsername || '').trim().toLowerCase();
+    const cNameStr = String(userFullName || '').trim().toLowerCase();
+
+    // Mark received messages as seen in uc_messages
     await productSupabase
       .from('uc_messages')
       .update({ is_seen: true })
       .eq('thread_id', threadId)
-      .eq('receiver_id', currentUserId)
       .eq('is_seen', false);
+
+    // Reset unread counter to 0 in uc_threads for this user
+    const { data: thread } = await productSupabase
+      .from('uc_threads')
+      .select('buyer_id, seller_id, buyer_unread_count, seller_unread_count')
+      .eq('id', threadId)
+      .single();
+
+    if (thread) {
+      const bIdStr = String(thread.buyer_id || '').trim().toLowerCase();
+      const isBuyer = (bIdStr === cIdStr.toLowerCase()) || (cUserStr && bIdStr === cUserStr) || (cNameStr && bIdStr === cNameStr);
+
+      const update = isBuyer ? { buyer_unread_count: 0 } : { seller_unread_count: 0 };
+      await productSupabase.from('uc_threads').update(update).eq('id', threadId);
+    }
   } catch (err) { console.warn('[chatService] markSeen:', err); }
 }
