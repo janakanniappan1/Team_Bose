@@ -223,32 +223,7 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* 4. Popular Near Your Hostel Section */}
-      <section className="popular-section my-4">
-        <div className="container">
-          <div className="section-header mb-3">
-            <div className="title-with-badge">
-              <Flame className="text-rose" size={22} />
-              <h2 className="section-title">Popular Near Your Hostel</h2>
-            </div>
-          </div>
 
-          <div className="grid-responsive">
-            {popularProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isWishlisted={wishlist.includes(product.id)}
-                onToggleWishlist={onToggleWishlist}
-                onSelectProduct={onSelectProduct}
-                onStartChat={onStartChat}
-                onToggleCompare={onToggleCompare}
-                isCompared={compareList.some(p => p.id === product.id)}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 5. Recommended For You AI Section */}
       <section className="recommended-section my-4">
