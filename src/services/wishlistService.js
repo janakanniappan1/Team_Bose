@@ -9,9 +9,9 @@ export const wishlistService = {
   getWishlist() {
     try {
       const stored = localStorage.getItem(WISHLIST_KEY);
-      return stored ? JSON.parse(stored) : ['prod-1', 'prod-3'];
+      return stored ? JSON.parse(stored) : [];
     } catch {
-      return ['prod-1', 'prod-3'];
+      return [];
     }
   },
 

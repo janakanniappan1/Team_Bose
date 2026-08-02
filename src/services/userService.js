@@ -3,38 +3,8 @@ import { MOCK_USER } from '../data/mockData';
 const OFFERS_KEY = 'uniswap_stored_offers';
 
 const DEFAULT_OFFERS = {
-  sent: [
-    {
-      id: 'off-1',
-      productTitle: 'Casio fx-991EX Calculator',
-      listedPrice: 950,
-      offeredPrice: 850,
-      sellerName: 'Ananya Sharma',
-      date: '30 Jan 2026',
-      status: 'Accepted'
-    },
-    {
-      id: 'off-2',
-      productTitle: 'Hero Sprint 24T Bicycle',
-      listedPrice: 3800,
-      offeredPrice: 3200,
-      sellerName: 'Rohan Verma',
-      date: '28 Jan 2026',
-      status: 'Counter Offered',
-      counterPrice: 3400
-    }
-  ],
-  received: [
-    {
-      id: 'off-3',
-      productTitle: 'Dell UltraSharp 24" Monitor',
-      listedPrice: 8500,
-      offeredPrice: 7800,
-      buyerName: 'Vikram Singh',
-      date: '31 Jan 2026',
-      status: 'Pending'
-    }
-  ]
+  sent: [],
+  received: []
 };
 
 const getStoredOffers = () => {
@@ -71,31 +41,7 @@ export const updateProfile = async (updatedData) => {
 export const getPurchaseHistory = async () => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([
-        {
-          id: 'pur-1',
-          title: 'MacBook Air M1 (2020) 256GB SSD',
-          price: 48500,
-          purchaseDate: '24 Jan 2026',
-          sellerName: 'Dr. Ramesh Kumar',
-          sellerRole: 'Verified Faculty',
-          image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80',
-          status: 'Completed',
-          hasReviewed: true,
-          ratingGiven: 5
-        },
-        {
-          id: 'pur-2',
-          title: 'Engineering Mathematics Vol 1 & 2 Textbook',
-          price: 450,
-          purchaseDate: '12 Dec 2025',
-          sellerName: 'Priya Patel',
-          sellerRole: 'Verified Student',
-          image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-          status: 'Completed',
-          hasReviewed: false
-        }
-      ]);
+      resolve([]);
     }, 150);
   });
 };

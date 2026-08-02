@@ -1,16 +1,16 @@
 // Campus Marketplace Mock Data
 
 export const CATEGORIES = [
-  { id: 'electronics', name: 'Electronics', icon: 'Laptop', count: 142, bg: '#EFF6FF', color: '#2563EB' },
-  { id: 'books', name: 'Books & Notes', icon: 'BookOpen', count: 289, bg: '#ECFDF5', color: '#10B981' },
-  { id: 'lab', name: 'Lab Equipment', icon: 'FlaskConical', count: 64, bg: '#FEF3C7', color: '#D97706' },
-  { id: 'furniture', name: 'Furniture', icon: 'Armchair', count: 98, bg: '#F3E8FF', color: '#8B5CF6' },
-  { id: 'cycles', name: 'Cycles & Transport', icon: 'Bike', count: 45, bg: '#FFE4E6', color: '#E11D48' },
-  { id: 'hostel', name: 'Hostel Essentials', icon: 'Home', count: 176, bg: '#E0F2FE', color: '#0284C7' },
-  { id: 'fashion', name: 'Fashion & Merch', icon: 'Shirt', count: 110, bg: '#FCE7F3', color: '#DB2777' },
-  { id: 'sports', name: 'Sports Gear', icon: 'Trophy', count: 83, bg: '#FEF9C3', color: '#CA8A04' },
-  { id: 'stationery', name: 'Stationery', icon: 'PenTool', count: 154, bg: '#F1F5F9', color: '#475569' },
-  { id: 'others', name: 'Others', icon: 'Grid', count: 52, bg: '#F3F4F6', color: '#6B7280' },
+  { id: 'electronics', name: 'Electronics', icon: 'Laptop', count: 0, bg: '#EFF6FF', color: '#2563EB' },
+  { id: 'books', name: 'Books & Notes', icon: 'BookOpen', count: 0, bg: '#ECFDF5', color: '#10B981' },
+  { id: 'lab', name: 'Lab Equipment', icon: 'FlaskConical', count: 0, bg: '#FEF3C7', color: '#D97706' },
+  { id: 'furniture', name: 'Furniture', icon: 'Armchair', count: 0, bg: '#F3E8FF', color: '#8B5CF6' },
+  { id: 'cycles', name: 'Cycles & Transport', icon: 'Bike', count: 0, bg: '#FFE4E6', color: '#E11D48' },
+  { id: 'hostel', name: 'Hostel Essentials', icon: 'Home', count: 0, bg: '#E0F2FE', color: '#0284C7' },
+  { id: 'fashion', name: 'Fashion & Merch', icon: 'Shirt', count: 0, bg: '#FCE7F3', color: '#DB2777' },
+  { id: 'sports', name: 'Sports Gear', icon: 'Trophy', count: 0, bg: '#FEF9C3', color: '#CA8A04' },
+  { id: 'stationery', name: 'Stationery', icon: 'PenTool', count: 0, bg: '#F1F5F9', color: '#475569' },
+  { id: 'others', name: 'Others', icon: 'Grid', count: 0, bg: '#F3F4F6', color: '#6B7280' },
 ];
 
 export const MOCK_PRODUCTS = [
@@ -272,107 +272,9 @@ export const MOCK_USER = {
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80'
 };
 
-export const MOCK_NOTIFICATIONS = [
-  {
-    id: 'notif-1',
-    type: 'sold',
-    title: 'Item Sold Successfully! 🎉',
-    message: 'Your listing "Engineering Physics Notes" was marked as sold to Rahul V.',
-    time: '15 mins ago',
-    unread: true
-  },
-  {
-    id: 'notif-2',
-    type: 'message',
-    title: 'New Message from Rohan Verma',
-    message: '"Is the Hero Sprint Cycle still available for test ride today near Hostel 7?"',
-    time: '1 hour ago',
-    unread: true
-  },
-  {
-    id: 'notif-3',
-    type: 'price_drop',
-    title: 'Wishlist Price Drop Alert! 📉',
-    message: 'The price for "Casio Scientific Calculator" dropped from ₹1,100 to ₹950.',
-    time: '3 hours ago',
-    unread: false
-  },
-  {
-    id: 'notif-4',
-    type: 'recommendation',
-    title: 'New Similar Product Listed',
-    message: 'A seller in CS Department just posted "SanDisk 128GB Pendrive".',
-    time: 'Yesterday',
-    unread: false
-  }
-];
+export const MOCK_NOTIFICATIONS = [];
 
-export const MOCK_MESSAGES = [
-  {
-    id: 'chat-1',
-    sellerName: 'Ananya Sharma',
-    sellerDept: 'Computer Science & Engg',
-    sellerYear: '3rd Year B.Tech',
-    sellerHostel: 'Girls Hostel 2, Room 310',
-    sellerPhone: '+91 98765 43210',
-    sellerEmail: 'ananya.s@campus.edu',
-    sellerRating: 4.9,
-    sellerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
-    itemTitle: 'Casio fx-991EX Calculator',
-    itemPrice: 950,
-    itemImage: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=250&q=80',
-    online: true,
-    lastMsgTime: '10:45 AM',
-    unreadCount: 1,
-    messages: [
-      { id: 'm1', sender: 'seller', text: 'Hi! Yes the calculator is available. Complete with cover.', time: '10:30 AM' },
-      { id: 'm2', sender: 'user', text: 'Great! Can we meet near CS Library around 4 PM today?', time: '10:40 AM' },
-      { id: 'm3', sender: 'seller', text: 'Sounds perfect! I will bring it along after my OS lab.', time: '10:45 AM' }
-    ]
-  },
-  {
-    id: 'chat-2',
-    sellerName: 'Rohan Verma',
-    sellerDept: 'Mechanical Engineering',
-    sellerYear: '4th Year B.Tech',
-    sellerHostel: 'Hostel 5, Room 204',
-    sellerPhone: '+91 98123 45678',
-    sellerEmail: 'rohan.v@campus.edu',
-    sellerRating: 4.8,
-    sellerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-    itemTitle: 'Hero Sprint 24T Cycle',
-    itemPrice: 3400,
-    itemImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=250&q=80',
-    online: false,
-    lastMsgTime: 'Yesterday',
-    unreadCount: 0,
-    messages: [
-      { id: 'm1', sender: 'user', text: 'Is the cycle price negotiable if I pick it up today?', time: 'Yesterday 5:20 PM' },
-      { id: 'm2', sender: 'seller', text: 'I can do ₹3,200 final. Chain and brakes are recently oiled.', time: 'Yesterday 6:15 PM' }
-    ]
-  },
-  {
-    id: 'chat-3',
-    sellerName: 'Priya Patel',
-    sellerDept: 'Electronics & Communication',
-    sellerYear: '2nd Year B.Tech',
-    sellerHostel: 'Girls Hostel 1, Room 105',
-    sellerPhone: '+91 97890 12345',
-    sellerEmail: 'priya.p@campus.edu',
-    sellerRating: 4.95,
-    sellerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-    itemTitle: 'CLRS Introduction to Algorithms (4th Ed)',
-    itemPrice: 650,
-    itemImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=250&q=80',
-    online: true,
-    lastMsgTime: '2 days ago',
-    unreadCount: 0,
-    messages: [
-      { id: 'm1', sender: 'seller', text: 'Hi, the algorithm textbook is crisp clean without highlighter marks.', time: '2 days ago' },
-      { id: 'm2', sender: 'user', text: 'Can I check it at SAC Canteen tomorrow?', time: '2 days ago' }
-    ]
-  }
-];
+export const MOCK_MESSAGES = [];
 
 export const DEPARTMENTS = [
   'Computer Science & Engineering',

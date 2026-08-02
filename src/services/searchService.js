@@ -39,10 +39,7 @@ export const searchService = {
   getSavedSearches: () => {
     try {
       const saved = localStorage.getItem(SAVED_SEARCHES_KEY);
-      return saved ? JSON.parse(saved) : [
-        { id: 's1', term: 'Calculator FX-991EX', category: 'calculators', date: '2 days ago' },
-        { id: 's2', term: 'Engineering Chemistry Book', category: 'textbooks', date: '5 days ago' }
-      ];
+      return saved ? JSON.parse(saved) : [];
     } catch (err) {
       console.error('Error reading saved searches:', err);
       return [];

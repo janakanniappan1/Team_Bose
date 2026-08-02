@@ -485,18 +485,13 @@ export default function UserDashboardPage({
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h3 className="section-title">Campus Ratings & Feedback</h3>
                   <div className="badge badge-amber font-weight-bold" style={{ fontSize: '1rem' }}>
-                    ★ 4.9 Rating (18 Reviews)
+                    ★ 5.0 Rating (0 Reviews)
                   </div>
                 </div>
 
-                <div className="review-card card p-3 background-slate-50 mb-3">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <strong style={{ fontSize: '0.9rem' }}>Ananya Sharma</strong>
-                    <span className="text-amber">★★★★★</span>
-                  </div>
-                  <p className="text-muted" style={{ fontSize: '0.85rem' }}>
-                    "Super smooth exchange! Calculator was in brand new condition."
-                  </p>
+                <div className="text-center py-4 text-muted">
+                  <Star size={32} className="mb-2 text-slate-300" />
+                  <p className="mb-0">No campus reviews yet. Complete your first deal to receive feedback!</p>
                 </div>
               </div>
             )}
