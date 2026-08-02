@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   Heart, 
@@ -57,6 +57,34 @@ export default function HomePage({
     PenTool: <PenTool size={24} />,
     Grid: <Grid size={24} />
   };
+
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    (products || []).forEach((p) => {
+      let key = (p.category || 'others').toLowerCase().trim();
+      if (key.includes('electr') || key.includes('phone') || key.includes('mobile') || key.includes('gadget')) {
+        key = 'electronics';
+      } else if (key.includes('book') || key.includes('note')) {
+        key = 'books';
+      } else if (key.includes('lab')) {
+        key = 'lab';
+      } else if (key.includes('furnit')) {
+        key = 'furniture';
+      } else if (key.includes('cycl') || key.includes('bike')) {
+        key = 'cycles';
+      } else if (key.includes('hostel')) {
+        key = 'hostel';
+      } else if (key.includes('fash') || key.includes('cloth')) {
+        key = 'fashion';
+      } else if (key.includes('sport')) {
+        key = 'sports';
+      } else if (key.includes('station')) {
+        key = 'stationery';
+      }
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [products]);
 
   const featuredProducts = products.filter((p) => p.featured || p.badge === 'Just Listed');
   const popularProducts = products.filter((p) => p.popular || p.price < 2000);
@@ -143,22 +171,25 @@ export default function HomePage({
           </div>
 
           <div className="categories-grid">
-            {CATEGORIES.map((cat) => (
-              <div
-                key={cat.id}
-                className="category-card"
-                onClick={() => onSelectCategory(cat.id)}
-              >
-                <div 
-                  className="category-icon-wrapper" 
-                  style={{ backgroundColor: cat.bg, color: cat.color }}
+            {CATEGORIES.map((cat) => {
+              const itemCount = categoryCounts[cat.id] || 0;
+              return (
+                <div
+                  key={cat.id}
+                  className="category-card"
+                  onClick={() => onSelectCategory(cat.id)}
                 >
-                  {categoryIcons[cat.icon]}
+                  <div 
+                    className="category-icon-wrapper" 
+                    style={{ backgroundColor: cat.bg, color: cat.color }}
+                  >
+                    {categoryIcons[cat.icon]}
+                  </div>
+                  <h3 className="category-name">{cat.name}</h3>
+                  <span className="category-count">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
                 </div>
-                <h3 className="category-name">{cat.name}</h3>
-                <span className="category-count">{cat.count} items</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

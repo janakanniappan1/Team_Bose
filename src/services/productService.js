@@ -32,14 +32,41 @@ export const productService = {
 
       if (!error && data && data.length > 0) {
         const dbProducts = data
-          .filter(row => row.status !== 'Deleted' && row.status !== 'deleted' && String(row.username || '').toLowerCase() !== 'ramaaa')
-          .map((row) => ({
-            id: row.id || `db-${Date.now()}`,
-            title: row.product_name || 'Untitled Product',
-            price: row.selling_price || 0,
-            originalPrice: row.original_price || (row.selling_price ? row.selling_price * 1.3 : 0),
-            category: (row.Category || 'others').toLowerCase(),
-            condition: row.condition || 'Good',
+          .filter(row => {
+            const isDeleted = String(row.status || '').toLowerCase() === 'deleted';
+            const seller = String(row.username || row.seller_name || row.seller_id || row.user_id || '').toLowerCase();
+            const isRamaa = seller.includes('ramaa');
+            return !isDeleted && !isRamaa;
+          })
+          .map((row) => {
+            let catKey = String(row.Category || 'others').toLowerCase().trim();
+            if (catKey.includes('electr') || catKey.includes('phone') || catKey.includes('mobile') || catKey.includes('gadget')) {
+              catKey = 'electronics';
+            } else if (catKey.includes('book') || catKey.includes('note')) {
+              catKey = 'books';
+            } else if (catKey.includes('lab')) {
+              catKey = 'lab';
+            } else if (catKey.includes('furnit')) {
+              catKey = 'furniture';
+            } else if (catKey.includes('cycl') || catKey.includes('bike')) {
+              catKey = 'cycles';
+            } else if (catKey.includes('hostel')) {
+              catKey = 'hostel';
+            } else if (catKey.includes('fash') || catKey.includes('cloth')) {
+              catKey = 'fashion';
+            } else if (catKey.includes('sport')) {
+              catKey = 'sports';
+            } else if (catKey.includes('station')) {
+              catKey = 'stationery';
+            }
+
+            return {
+              id: row.id || `db-${Date.now()}`,
+              title: row.product_name || 'Untitled Product',
+              price: row.selling_price || 0,
+              originalPrice: row.original_price || (row.selling_price ? row.selling_price * 1.3 : 0),
+              category: catKey,
+              condition: row.condition || 'Good',
             postedDate: row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Recently',
             department: row.department || 'General',
             location: row.pickup_preference || row.hostel || 'Campus Location',
@@ -67,7 +94,8 @@ export const productService = {
             likes: 2,
             badge: row.status || 'Active',
             status: row.status || 'Approved'
-          }));
+          };
+        });
 
         // Keep local cache synced with DB to eliminate phantom deleted items
         localStorage.setItem(PRODUCTS_KEY, JSON.stringify(dbProducts));
