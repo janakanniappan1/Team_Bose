@@ -12,26 +12,26 @@ import { productSupabase } from '../lib/supabase';
 //   - Expose refreshThreads for manual refresh
 // ============================================================
 
-export function useThreads(currentUserId, currentUsername = null) {
+export function useThreads(currentUserId, currentUsername = null, currentFullName = null) {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadThreads = useCallback(async () => {
-    if (!currentUserId) {
+    if (!currentUserId && !currentUsername && !currentFullName) {
       setThreads([]);
       setLoading(false);
       return;
     }
 
     try {
-      const data = await threadService.getUserThreads(currentUserId, currentUsername);
+      const data = await threadService.getUserThreads(currentUserId, currentUsername, currentFullName);
       setThreads(data);
     } catch (err) {
       console.error('[useThreads] loadThreads error:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentUserId, currentUsername]);
+  }, [currentUserId, currentUsername, currentFullName]);
 
   useEffect(() => {
     loadThreads();

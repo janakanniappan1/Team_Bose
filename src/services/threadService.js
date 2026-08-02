@@ -6,13 +6,11 @@ import { productSupabase, supabase } from '../lib/supabase';
 
 export const threadService = {
 
-  getUserThreads: async (userId, userUsername = null) => {
-    if (!userId) return [];
+  getUserThreads: async (userId, userUsername = null, userFullName = null) => {
+    if (!userId && !userUsername && !userFullName) return [];
     try {
-      let filter = `buyer_id.eq.${userId},seller_id.eq.${userId}`;
-      if (userUsername) {
-        filter += `,buyer_id.eq.${userUsername},seller_id.eq.${userUsername}`;
-      }
+      const ids = [...new Set([userId, userUsername, userFullName].filter(Boolean))];
+      const filter = ids.map(id => `buyer_id.eq.${id},seller_id.eq.${id}`).join(',');
 
       const { data: threads, error } = await productSupabase
         .from('uc_threads')

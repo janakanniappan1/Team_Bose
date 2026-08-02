@@ -23,11 +23,12 @@ import { threadService } from '../services/threadService';
 import { productSupabase } from '../lib/supabase';
 
 export function useChat(currentUser, initialThreadId = null, initialChat = null) {
-  // ── Resolve current user ID & Username ────────────────────────
+  // ── Resolve current user ID & Username & Full Name ─────────────
   const currentUserId = currentUser?.id || currentUser?.authId || currentUser?.username || null;
   const currentUsername = currentUser?.username || null;
+  const currentFullName = currentUser?.full_name || currentUser?.fullName || null;
 
-  const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId, currentUsername);
+  const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId, currentUsername, currentFullName);
   const [activeThreadId, setActiveThreadId] = useState(initialThreadId || null);
   const [fetchedActiveThread, setFetchedActiveThread] = useState(initialChat || null);
 
