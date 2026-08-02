@@ -77,6 +77,61 @@ CREATE TABLE IF NOT EXISTS user_images (
 );
 ```
 
+### Table: `user_imagesss` (Seller Uploads)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Auto-generated primary key |
+| username | TEXT | Seller's username |
+| audience | TEXT | Target audience (students/faculty/all) |
+| object_names | TEXT[] | Array of storage file names |
+| image_urls | TEXT[] | Array of public image URLs |
+| video_url | TEXT | Optional YouTube/Drive video link |
+| Category | TEXT | Electronics, Books, Cycles, etc. |
+| condition | TEXT | Like New, Good, Fair, etc. |
+| product_name | TEXT | Name / Title of product |
+| selling_price | INTEGER | Asking price in ₹ |
+| original_price | INTEGER | MRP in ₹ |
+| negotiable | BOOLEAN | true / false |
+| brand | TEXT | Brand name |
+| model | TEXT | Model number |
+| purchase_year | INTEGER | Year purchased |
+| reason | TEXT | Reason for selling |
+| description | TEXT | Full product description |
+| hostel | TEXT | Seller hostel |
+| department | TEXT | Seller department |
+| pickup_preference | TEXT | Preferred pickup spot |
+| status | TEXT | Pending Approval / Approved / Sold |
+| created_at | TIMESTAMPTZ | Upload timestamp |
+
+### Table: `buyer_marketplace` (Products Available for Buyers)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Primary key |
+| product_title | TEXT | Item title |
+| price | INTEGER | Purchase price |
+| original_price | INTEGER | Original MRP |
+| category | TEXT | Category name |
+| condition | TEXT | Item condition |
+| seller_name | TEXT | Seller full name |
+| seller_contact | TEXT | Phone number |
+| location | TEXT | Pickup spot |
+| department | TEXT | Department |
+| image_urls | TEXT[] | Product images |
+| description | TEXT | Description |
+| status | TEXT | Available / Reserved / Sold |
+
+### Table: `buyer_orders` (Buyer Orders & Purchase History)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Order ID |
+| product_title | TEXT | Purchased product name |
+| price | INTEGER | Amount paid |
+| buyer_name | TEXT | Buyer's name |
+| buyer_email | TEXT | Buyer's campus email |
+| seller_name | TEXT | Seller's name |
+| pickup_location | TEXT | Designated campus pickup spot |
+| status | TEXT | Pending Pickup / Completed / Cancelled |
+
 ---
 
 ## 🔵 Setup Instructions for Both Databases

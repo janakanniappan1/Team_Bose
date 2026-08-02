@@ -71,3 +71,55 @@ CREATE TABLE IF NOT EXISTS user_imagesss (
 ALTER TABLE user_imagesss ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public insert" ON user_imagesss FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public select" ON user_imagesss FOR SELECT USING (true);
+
+
+-- ============================================================
+-- 🛒 TABLE 3: buyer_marketplace
+-- Active approved products displayed for buyers to browse & buy
+-- ============================================================
+CREATE TABLE IF NOT EXISTS buyer_marketplace (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_title     TEXT NOT NULL,
+  price             INTEGER NOT NULL,
+  original_price    INTEGER,
+  category          TEXT DEFAULT 'electronics',
+  condition         TEXT DEFAULT 'Like New',
+  seller_name       TEXT NOT NULL,
+  seller_contact    TEXT,
+  location          TEXT,
+  department        TEXT,
+  image_urls        TEXT[],
+  description       TEXT,
+  negotiable        BOOLEAN DEFAULT TRUE,
+  status            TEXT DEFAULT 'Available',  -- Available | Reserved | Sold
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE buyer_marketplace ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select buyer_marketplace" ON buyer_marketplace FOR SELECT USING (true);
+CREATE POLICY "Allow public insert buyer_marketplace" ON buyer_marketplace FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update buyer_marketplace" ON buyer_marketplace FOR UPDATE USING (true);
+
+
+-- ============================================================
+-- 💳 TABLE 4: buyer_orders
+-- Records of purchases/orders placed by buyers
+-- ============================================================
+CREATE TABLE IF NOT EXISTS buyer_orders (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id        UUID,
+  product_title     TEXT NOT NULL,
+  price             INTEGER NOT NULL,
+  buyer_name        TEXT NOT NULL,
+  buyer_email       TEXT,
+  buyer_phone       TEXT,
+  seller_name       TEXT NOT NULL,
+  pickup_location   TEXT,
+  status            TEXT DEFAULT 'Completed',  -- Pending Pickup | Completed | Cancelled
+  order_date        TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE buyer_orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select buyer_orders" ON buyer_orders FOR SELECT USING (true);
+CREATE POLICY "Allow public insert buyer_orders" ON buyer_orders FOR INSERT WITH CHECK (true);
+

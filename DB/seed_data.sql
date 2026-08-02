@@ -190,3 +190,46 @@ INSERT INTO user_imagesss (
   'Girls Hostel 1', 'Electronics & Communication', 'Hostel 3 Common Room / SAC',
   'Approved'
 );
+
+
+-- ============================================================
+-- SEED: buyer_marketplace table (Products for Buyers to Buy)
+-- ============================================================
+INSERT INTO buyer_marketplace (
+  product_title, price, original_price, category, condition,
+  seller_name, seller_contact, location, department, image_urls,
+  description, negotiable, status
+) VALUES
+(
+  'Casio fx-991EX ClassWiz Engineering Scientific Calculator', 950, 1695, 'electronics', 'Like New',
+  'Ananya Sharma', '+91 98765 43210', 'Hostel 4 (C-Block)', 'Computer Science',
+  ARRAY['https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80'],
+  'Barely used Casio scientific calculator. Includes original hard case & quick reference card.', true, 'Available'
+),
+(
+  'Hero Sprint Next 24T Gear Cycle', 3400, 7500, 'cycles', 'Good',
+  'Rohan Verma', '+91 98123 45678', 'Hostel 5', 'Mechanical Engineering',
+  ARRAY['https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80'],
+  'Smooth 21-speed Shimano gears, dual disc brakes, new gel seat cover.', true, 'Available'
+),
+(
+  'CLRS Introduction to Algorithms - 3rd Edition', 650, 1499, 'books', 'Like New',
+  'Priya Nair', '+91 97654 32109', 'Girls Hostel 1', 'Information Technology',
+  ARRAY['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80'],
+  'Essential textbook for DS&A. Free hand-written revision notes included!', false, 'Available'
+);
+
+
+-- ============================================================
+-- SEED: buyer_orders table (Buyer Purchase History)
+-- ============================================================
+INSERT INTO buyer_orders (
+  product_title, price, buyer_name, buyer_email, seller_name, pickup_location, status
+) VALUES
+(
+  'MacBook Air M1 (2020) 256GB SSD', 48500, 'Jana K', 'jana.k@campus.edu', 'Dr. Ramesh Kumar', 'Central Library Foyer', 'Completed'
+),
+(
+  'Engineering Mathematics Vol 1 & 2 Textbook', 450, 'Jana K', 'jana.k@campus.edu', 'Priya Patel', 'SAC Canteen', 'Completed'
+);
+
