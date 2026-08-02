@@ -1,4 +1,5 @@
 import { MOCK_PRODUCTS } from '../data/mockData';
+import { productSupabase } from '../lib/supabase';
 
 const PRODUCTS_KEY = 'uniswap_stored_products';
 const RECENTLY_VIEWED_KEY = 'uniswap_recently_viewed';
@@ -18,14 +19,64 @@ const getStoredProducts = () => {
 
 export const productService = {
   /**
-   * Fetch all products (LocalStorage backed for persistence)
+   * Fetch all products (LocalStorage + Supabase user_imagesss table)
    */
   async getProducts() {
-    return getStoredProducts();
+    const localProducts = getStoredProducts();
+    try {
+      const { data, error } = await productSupabase
+        .from('user_imagesss')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const dbProducts = data.map((row) => ({
+          id: row.id || `db-${Date.now()}`,
+          title: row.product_name || 'Untitled Product',
+          price: row.selling_price || 0,
+          originalPrice: row.original_price || (row.selling_price ? row.selling_price * 1.3 : 0),
+          category: (row.Category || 'others').toLowerCase(),
+          condition: row.condition || 'Good',
+          postedDate: row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Recently',
+          location: row.pickup_preference || row.hostel || 'Campus Location',
+          department: row.department || 'General',
+          sellerName: row.username || 'Campus Seller',
+          sellerDept: row.department || 'Student',
+          sellerYear: '3rd Year B.Tech',
+          sellerRating: 5.0,
+          sellerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+          images: (row.image_urls && row.image_urls.length > 0) 
+            ? row.image_urls 
+            : ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80'],
+          videoUrl: row.video_url || null,
+          description: row.description || '',
+          negotiable: Boolean(row.negotiable),
+          brand: row.brand || '',
+          model: row.model || '',
+          purchaseYear: row.purchase_year || '',
+          reasonForSelling: row.reason || '',
+          featured: false,
+          popular: true,
+          recommended: true,
+          views: 10,
+          likes: 2,
+          badge: row.status || 'Active',
+          status: row.status || 'Approved'
+        }));
+
+        // Merge DB products with local products (avoiding duplicate IDs)
+        const dbIds = new Set(dbProducts.map(p => p.id));
+        const merged = [...dbProducts, ...localProducts.filter(p => !dbIds.has(p.id))];
+        return merged;
+      }
+    } catch (err) {
+      console.warn('[productService] Falling back to local storage products:', err);
+    }
+    return localProducts;
   },
 
   /**
-   * Create a new product (Appends to top of products list)
+   * Create a new product (Saves locally AND inserts into Supabase user_imagesss)
    */
   async createProduct(newProductData) {
     const products = getStoredProducts();
@@ -33,12 +84,54 @@ export const productService = {
       ...newProductData,
       id: newProductData.id || `prod-${Date.now()}`,
       postedDate: newProductData.postedDate || 'Just now',
-      status: newProductData.status || 'Approved', // Auto-approved for seller active listing display!
+      status: newProductData.status || 'Approved',
       views: newProductData.views || 1,
       likes: 0
     };
+
+    // 1. Save locally for instant UI update
     const updated = [created, ...products];
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(updated));
+
+    // 2. Insert into Supabase Database 2 (user_imagesss table)
+    try {
+      const payload = {
+        username: newProductData.sellerName || 'Anonymous User',
+        audience: newProductData.audience || 'students',
+        object_names: (newProductData.images || []).map((_, idx) => `img-${Date.now()}-${idx}.jpg`),
+        image_urls: newProductData.images || [],
+        video_url: newProductData.videoUrl || null,
+        Category: newProductData.category || 'Electronics',
+        condition: newProductData.condition || 'Like New',
+        product_name: newProductData.title || 'Untitled Product',
+        selling_price: Number(newProductData.price) || 0,
+        original_price: Number(newProductData.originalPrice) || 0,
+        negotiable: Boolean(newProductData.negotiable),
+        brand: newProductData.brand || null,
+        model: newProductData.model || null,
+        purchase_year: newProductData.purchaseYear ? parseInt(newProductData.purchaseYear) : null,
+        reason: newProductData.reasonForSelling || null,
+        description: newProductData.description || '',
+        hostel: newProductData.hostel || null,
+        department: newProductData.department || null,
+        pickup_preference: newProductData.location || null,
+        status: newProductData.status || 'Pending Approval'
+      };
+
+      const { data, error } = await productSupabase
+        .from('user_imagesss')
+        .insert([payload])
+        .select();
+
+      if (error) {
+        console.error('[Supabase] Failed to insert into user_imagesss table:', error);
+      } else {
+        console.log('[Supabase] Successfully inserted product into user_imagesss table!', data);
+      }
+    } catch (err) {
+      console.error('[Supabase] Error posting to user_imagesss:', err);
+    }
+
     return created;
   },
 

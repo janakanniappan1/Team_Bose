@@ -18,11 +18,18 @@ if (!isConfigured) {
   );
 }
 
-// Create and export the Supabase client
+// Create and export the main Supabase client (Database 1 - Auth)
 export const supabase = createClient(
   isConfigured ? supabaseUrl : 'https://placeholder.supabase.co',
   isConfigured ? supabaseAnonKey : 'placeholder-key'
 );
 
+// Create and export Database 2 Supabase client for Product Sales (user_imagesss)
+const PRODUCT_DB_URL = 'https://drqieumjptfmzhizjzge.supabase.co';
+const PRODUCT_DB_KEY = 'sb_publishable_mCSK_djyZveTJsS4NLuKlw_0SNRIHq0';
+
+export const productSupabase = createClient(PRODUCT_DB_URL, PRODUCT_DB_KEY);
+
 // Export helper so other files can check if Supabase is properly configured
 export const isSupabaseConfigured = () => isConfigured;
+
