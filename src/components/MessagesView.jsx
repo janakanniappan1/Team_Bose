@@ -89,6 +89,20 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     }
   }, [initialChat]);
 
+  const fallbackThread = {
+    id: 'default-chat',
+    sellerName: 'Rizwan Ahamed',
+    buyerName: 'Jana K',
+    itemTitle: 'INFINIX NOTE 50s',
+    itemPrice: 15999,
+    itemImage: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=300&q=80',
+    online: true,
+    lastMsgTime: 'Just now',
+    messages: [
+      { id: 'm-def-1', sender: 'seller', sender_username: 'Rizwan Ahamed', text: 'Hi! Welcome to Uniswap Safe Campus Chat.', time: '10:00 AM' }
+    ]
+  };
+
   // Dynamic Active Thread resolution:
   // Find first thread where contact is an OPPONENT user (not self)
   const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'Jana').split(' ')[0].toLowerCase();
@@ -98,11 +112,11 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     return !sellerLower.includes(myFirstNameLower);
   });
 
-  const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0];
+  const activeThread = chatThreads.find((c) => c.id === activeChatId) || validOpponentThread || chatThreads[0] || fallbackThread;
 
   // Helper: Get the OTHER participant's name for WhatsApp view (so Jana sees Rizwan, and Rizwan sees Jana)
   const getContactInfo = (thread) => {
-    if (!thread) return { name: 'Campus User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
+    if (!thread) return { name: 'Rizwan Ahamed', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' };
     
     const myFullNameLower = (currentUser?.fullName || '').toLowerCase();
     const myUsernameLower = (currentUser?.username || '').toLowerCase();
