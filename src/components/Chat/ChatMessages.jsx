@@ -67,7 +67,7 @@ export function ChatMessages({
         <MessageBubble
           key={msg.id}
           message={msg}
-          isMe={msg.sender_id === currentUserId}
+          isMe={String(msg.sender_id || '').trim().toLowerCase() === String(currentUserId || '').trim().toLowerCase()}
         />
       ))}
 

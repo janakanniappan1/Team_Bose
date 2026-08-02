@@ -37,12 +37,15 @@ export async function sendChatMessage({
 
   const displayMessage = message?.trim() || (messageType === 'image' ? '📷 Photo' : 'Message');
 
+  const sIdStr = String(senderId);
+  const rIdStr = String(receiverId);
+
   const { data: newMsg, error: msgError } = await productSupabase
     .from('uc_messages')
     .insert([{
       thread_id: threadId,
-      sender_id: senderId,
-      receiver_id: receiverId,
+      sender_id: sIdStr,
+      receiver_id: rIdStr,
       message: displayMessage,
       message_type: messageType,
       image_url: imageUrl || null,
@@ -64,10 +67,10 @@ export async function sendChatMessage({
       .single();
 
     if (thread) {
-      const isSenderBuyer = thread.buyer_id === senderId;
+      const isSenderBuyer = String(thread.buyer_id || '').trim().toLowerCase() === String(senderId || '').trim().toLowerCase();
       const update = {
         last_message: displayMessage,
-        last_sender_id: senderId,
+        last_sender_id: sIdStr,
         last_message_time: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };

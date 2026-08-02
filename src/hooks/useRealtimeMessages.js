@@ -107,8 +107,8 @@ export function useRealtimeMessages(threadId, currentUserId, receiverId) {
     const tempMessage = {
       id: tempId,
       thread_id: threadId,
-      sender_id: currentUserId,
-      receiver_id: receiverId,
+      sender_id: String(currentUserId),
+      receiver_id: String(receiverId),
       message: text?.trim() || (messageType === 'image' ? '📷 Photo' : 'Message'),
       message_type: messageType,
       image_url: extraPayload.imageUrl || null,
