@@ -38,6 +38,7 @@ export default function App() {
   };
 
   const [activeView, setActiveView] = useState('login');
+  const [viewParams, setViewParams] = useState({});
   const [currentUser, setCurrentUser] = useState(MOCK_USER);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [compareList, setCompareList] = useState([]);
@@ -90,6 +91,7 @@ export default function App() {
 
   // Synchronize Navigation with Browser History API
   const navigateToView = (newView, params = {}) => {
+    setViewParams(params);
     if (activeView !== newView) {
       setActiveView(newView);
       window.location.hash = newView;
