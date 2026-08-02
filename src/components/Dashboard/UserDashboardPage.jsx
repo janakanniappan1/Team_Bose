@@ -317,11 +317,13 @@ export default function UserDashboardPage({
 
             {/* MESSAGES */}
             {activeTab === 'messages' && (
-              <MessagesView
-                currentUser={user}
-                onSelectProduct={onSelectProduct}
-                onGoBack={() => setActiveTab('overview')}
-              />
+              <div style={{ height: 'calc(100vh - 140px)', minHeight: '520px', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <MessagesView
+                  currentUser={user}
+                  onSelectProduct={onSelectProduct}
+                  onGoBack={() => setActiveTab('overview')}
+                />
+              </div>
             )}
 
             {/* PURCHASE HISTORY */}

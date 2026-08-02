@@ -2654,6 +2654,9 @@ img {
 
 .chat-header {
   flex: 0 0 auto !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: #ffffff !important;
 }
 
 .message-input-bar {
