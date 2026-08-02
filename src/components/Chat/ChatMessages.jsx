@@ -15,14 +15,18 @@ export function ChatMessages({
   const scrollRef = useRef(null);
   const bottomRef = useRef(null);
 
-  // Smart auto-scroll to bottom only when user is near bottom
+  // Smart auto-scroll strictly inside the container ONLY (never touches main window)
   useEffect(() => {
     if (!scrollRef.current) return;
-    const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
+    const container = scrollRef.current;
+    const { scrollHeight, scrollTop, clientHeight } = container;
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
 
     if (isNearBottom || messages.length <= 10) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [messages.length, isTargetTyping]);
 

@@ -60,12 +60,12 @@ export default function Navbar({
           onSelectSuggestion={(term) => {
             setSearchQuery(term);
             setActiveView('search');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo(0, 0);
           }}
           onSearchSubmit={(term) => {
             setSearchQuery(term);
             setActiveView('search');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo(0, 0);
           }}
         />
 

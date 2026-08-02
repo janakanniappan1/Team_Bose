@@ -96,7 +96,7 @@ export default function App() {
       setActiveView(newView);
       window.location.hash = newView;
       window.history.pushState({ view: newView, ...params }, '', `/#${newView}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     }
   };
 
