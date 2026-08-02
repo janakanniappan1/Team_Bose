@@ -30,7 +30,7 @@ CREATE POLICY "Allow password update" ON users FOR UPDATE USING (true);
 -- Bucket      : imagies (Public)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS user_images (
+CREATE TABLE IF NOT EXISTS user_imagesss (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
   -- Seller Info
@@ -68,6 +68,6 @@ CREATE TABLE IF NOT EXISTS user_images (
 );
 
 -- Enable Row Level Security & Policies for Database 2
-ALTER TABLE user_images ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public insert" ON user_images FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public select" ON user_images FOR SELECT USING (true);
+ALTER TABLE user_imagesss ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public insert" ON user_imagesss FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public select" ON user_imagesss FOR SELECT USING (true);

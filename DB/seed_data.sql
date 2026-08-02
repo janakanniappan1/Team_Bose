@@ -22,9 +22,9 @@ ON CONFLICT (username) DO NOTHING;
 
 
 -- ============================================================
--- SEED: user_images table (product listings)
+-- SEED: user_imagesss table (product listings)
 -- ============================================================
-INSERT INTO user_images (
+INSERT INTO user_imagesss (
   username, audience, object_names, image_urls, video_url,
   "Category", condition, product_name, selling_price, original_price, negotiable,
   brand, model, purchase_year, reason,

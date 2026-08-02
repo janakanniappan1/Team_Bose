@@ -116,7 +116,7 @@ def main():
         print()
         print("Saving product to database...")
 
-        response = supabase.table("user_images").insert({
+        response = supabase.table("user_imagesss").insert({
             "username"         : username,
             "audience"         : audience,
             "object_names"     : object_names,
