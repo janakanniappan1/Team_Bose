@@ -24,25 +24,44 @@ CREATE POLICY "Allow password update" ON users FOR UPDATE USING (true);
 
 -- ============================================================
 -- TABLE 2: user_images
--- Used by upload_product.py to store product listings with images
+-- Used by upload_product.py and SellProductPage.jsx to store product listings
+-- Columns match the Sell Product form exactly
 -- ============================================================
 CREATE TABLE IF NOT EXISTS user_images (
-  id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  username       TEXT NOT NULL,
-  object_names   TEXT[],
-  image_urls     TEXT[],
-  "Category"     TEXT,
-  condition      TEXT,
-  product_name   TEXT,
-  selling_price  INTEGER,
-  original_price INTEGER,
-  brand          TEXT,
-  model          TEXT,
-  purchase_year  INTEGER,
-  negotiable     BOOLEAN DEFAULT FALSE,
-  reason         TEXT,
-  description    TEXT,
-  created_at     TIMESTAMPTZ DEFAULT NOW()
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- Seller Info
+  username          TEXT NOT NULL,
+  audience          TEXT DEFAULT 'students',   -- 'students' | 'faculty' | 'all'
+
+  -- Photos & Video
+  object_names      TEXT[],                    -- Storage file names (up to 8 images)
+  image_urls        TEXT[],                    -- Public URLs of uploaded images
+  video_url         TEXT,                      -- Optional: YouTube/Drive/Video URL
+
+  -- Product Core Details
+  "Category"        TEXT,                      -- Electronics, Books, Cycles, etc.
+  condition         TEXT,                      -- Brand New | Like New | Good
+  product_name      TEXT,                      -- Product Name / Title
+  selling_price     INTEGER,                   -- Selling Price in Rs
+  original_price    INTEGER,                   -- Original Purchase Price in Rs
+  negotiable        BOOLEAN DEFAULT FALSE,     -- Price Negotiable checkbox
+
+  -- Optional Specifications
+  brand             TEXT,                      -- Brand name
+  model             TEXT,                      -- Model number/name
+  purchase_year     INTEGER,                   -- Year of purchase
+  reason            TEXT,                      -- Reason for Selling
+
+  -- Description & Location
+  description       TEXT,                      -- Full Product Description
+  hostel            TEXT,                      -- Seller's hostel/location
+  department        TEXT,                      -- Seller's department
+  pickup_preference TEXT,                      -- Preferred pickup spot
+
+  -- Metadata
+  status            TEXT DEFAULT 'Pending Approval', -- Pending Approval | Approved | Sold
+  created_at        TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable Row Level Security
