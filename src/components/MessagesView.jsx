@@ -22,11 +22,7 @@ import {
   Tag,
   ShoppingBag
 } from 'lucide-react';
-import { MOCK_MESSAGES } from '../data/mockData';
-import OfferModal from './Chat/OfferModal';
-import OfferCard from './Chat/OfferCard';
-import { addOffer } from '../services/userService';
-import { notificationService } from '../services/notificationService';
+import { chatService } from '../services/chatService';
 
 export default function MessagesView({ currentUser, initialChat, onSelectProduct, onGoBack }) {
   const [chatThreads, setChatThreads] = useState(() => {
@@ -54,6 +50,28 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
   const messagesEndRef = React.useRef(null);
   const chatInputRef = React.useRef(null);
 
+  const currentUserName = currentUser?.fullName || currentUser?.username || 'Jana K';
+
+  // 1. Fetch threads & messages from Supabase DB on mount & poll every 3s for live WhatsApp experience
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const loadLiveChats = async () => {
+      const liveThreads = await chatService.getChatThreads();
+      if (isMounted && liveThreads && liveThreads.length > 0) {
+        setChatThreads(liveThreads);
+      }
+    };
+
+    loadLiveChats();
+    const intervalId = setInterval(loadLiveChats, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
+
   // Sync initialChat prop if passed from outside
   React.useEffect(() => {
     if (initialChat) {
@@ -73,6 +91,31 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
 
   const activeThread = chatThreads.find((c) => c.id === activeChatId) || chatThreads[0] || MOCK_MESSAGES[0];
 
+  // Helper: Get the OTHER participant's name for WhatsApp view (so Jana sees Rizwan, and Rizwan sees Jana)
+  const getContactInfo = (thread) => {
+    if (!thread) return { name: 'Campus User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
+    const myNameLower = currentUserName.toLowerCase();
+    const isSellerMe = thread.sellerName && thread.sellerName.toLowerCase().includes(myNameLower);
+    
+    if (isSellerMe) {
+      return {
+        name: thread.buyerName || 'Rizwan',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+        dept: 'Buyer / Student',
+        phone: '+91 98123 45678'
+      };
+    } else {
+      return {
+        name: thread.sellerName || 'Seller',
+        avatar: thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+        dept: thread.sellerDept || 'Computer Science & Engineering',
+        phone: thread.sellerPhone || '+91 98765 43210'
+      };
+    }
+  };
+
+  const activeContact = getContactInfo(activeThread);
+
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeThread?.messages?.length, activeChatId, isSellerTyping]);
@@ -84,7 +127,7 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     'Where can we meet?'
   ];
 
-  // Quick Reply handler: pastes text directly into chat box as requested by user
+  // Quick Reply handler: pastes text directly into chat box
   const handleSelectQuickReply = (replyText) => {
     setInputMessage(replyText);
     if (chatInputRef.current) {
@@ -92,12 +135,11 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     }
   };
 
-  const handleSendMessage = (textToSend) => {
+  const handleSendMessage = async (textToSend) => {
     const text = textToSend || inputMessage;
     if (!text || !text.trim()) return;
 
     const formattedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const currentUserName = currentUser?.fullName || currentUser?.username || 'User';
 
     const newMsg = {
       id: `m-${Date.now()}`,
@@ -110,6 +152,7 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
 
     const targetChatId = activeChatId;
 
+    // 1. Optimistic UI update
     setChatThreads((prev) => {
       const updated = prev.map((thread) => {
         if (thread.id === targetChatId) {
@@ -127,51 +170,8 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
 
     setInputMessage('');
 
-    // Simulated WhatsApp Seller Typing & Auto Reply
-    setTimeout(() => {
-      setIsSellerTyping(true);
-    }, 500);
-
-    setTimeout(() => {
-      setIsSellerTyping(false);
-      
-      const lower = text.toLowerCase();
-      let replyText = `Sounds good! Let's arrange a quick meet on campus.`;
-      
-      if (lower.includes('available')) {
-        replyText = `Hi! Yes, "${activeThread?.itemTitle || 'this item'}" is still available in great condition! Are you free to meet on campus today?`;
-      } else if (lower.includes('price') || lower.includes('reduce') || lower.includes('discount') || lower.includes('lower') || lower.includes('cost') || lower.includes('offer')) {
-        const discounted = activeThread?.itemPrice ? Math.round(activeThread.itemPrice * 0.9) : 500;
-        replyText = `I can offer a small discount if you collect it today from my hostel! How about ₹${discounted}? Let me know if that works for you!`;
-      } else if (lower.includes('when') || lower.includes('time') || lower.includes('today')) {
-        replyText = `I am free today after 4:00 PM near the Main Library or Student Canteen. What time suits you best?`;
-      } else if (lower.includes('where') || lower.includes('location') || lower.includes('meet') || lower.includes('place')) {
-        replyText = `We can meet at ${activeThread?.sellerHostel || 'Hostel Block'} or near the Central Canteen area!`;
-      }
-
-      const sellerMsg = {
-        id: `m-seller-${Date.now()}`,
-        sender: 'seller',
-        sender_username: activeThread?.sellerName || 'Seller',
-        text: replyText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      setChatThreads((prev) => {
-        const updated = prev.map((thread) => {
-          if (thread.id === targetChatId) {
-            return {
-              ...thread,
-              messages: [...thread.messages, sellerMsg],
-              lastMsgTime: 'Just now'
-            };
-          }
-          return thread;
-        });
-        localStorage.setItem('uniswap_chat_threads', JSON.stringify(updated));
-        return updated;
-      });
-    }, 2000);
+    // 2. Persist to Supabase Database 2 (chat_messages table)
+    await chatService.sendMessage(targetChatId, text.trim(), currentUserName);
   };
 
   const handleMakeOfferSubmit = async (amount, note) => {
@@ -336,7 +336,9 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
             <div className="threads-list">
               {filteredThreads.map((thread) => {
                 const isActive = thread.id === activeChatId;
-                const lastMsg = thread.messages[thread.messages.length - 1];
+                const lastMsg = thread.messages && thread.messages.length > 0 ? thread.messages[thread.messages.length - 1] : null;
+                const contact = getContactInfo(thread);
+
                 return (
                   <div
                     key={thread.id}
@@ -349,13 +351,13 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
                   >
                     <div className="d-flex align-items-center gap-3">
                       <div className="thread-avatar-wrap position-relative">
-                        <img src={thread.sellerAvatar} alt={thread.sellerName} className="thread-avatar user-avatar-img" />
+                        <img src={contact.avatar} alt={contact.name} className="thread-avatar user-avatar-img" />
                         {thread.online && <span className="online-dot"></span>}
                       </div>
 
                       <div className="thread-content flex-1 min-w-0">
                         <div className="d-flex justify-content-between align-items-center mb-1">
-                          <h4 className="thread-name text-truncate" style={{ fontSize: '0.9rem' }}>{thread.sellerName}</h4>
+                          <h4 className="thread-name text-truncate" style={{ fontSize: '0.9rem' }}>{contact.name}</h4>
                           <span className="thread-time text-muted" style={{ fontSize: '0.75rem' }}>{thread.lastMsgTime}</span>
                         </div>
                         <p className="thread-item-title text-primary font-weight-bold text-truncate" style={{ fontSize: '0.8rem' }}>
@@ -388,16 +390,16 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
                 <ArrowLeft size={20} />
               </button>
 
-              {/* Seller Avatar & Online/Typing Status */}
+              {/* Contact Avatar & Online/Typing Status */}
               <div className="d-flex align-items-center gap-3 flex-1 min-w-0">
                 <div className="chat-user-avatar-wrap position-relative" onClick={() => setShowInfoPanel(!showInfoPanel)} style={{ cursor: 'pointer' }}>
-                  <img src={activeThread.sellerAvatar} alt={activeThread.sellerName} className="user-avatar-img" />
+                  <img src={activeContact.avatar} alt={activeContact.name} className="user-avatar-img" />
                   <span className="online-dot"></span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="d-flex align-items-center gap-2">
-                    <h3 className="user-name text-truncate" style={{ fontSize: '1.05rem' }}>{activeThread.sellerName}</h3>
+                    <h3 className="user-name text-truncate" style={{ fontSize: '1.05rem' }}>{activeContact.name}</h3>
                     <span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>
                       <ShieldCheck size={12} /> Verified Student
                     </span>

@@ -31,6 +31,7 @@ export const chatService = {
             .map((m) => ({
               id: m.id,
               sender: m.sender,
+              sender_username: m.sender_username,
               text: m.text,
               time: m.sent_time || new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }));
@@ -38,6 +39,7 @@ export const chatService = {
           return {
             id: t.id,
             sellerName: t.seller_name,
+            buyerName: t.buyer_name || 'Rizwan',
             sellerDept: t.seller_dept || 'Campus Member',
             sellerPhone: t.seller_phone || '',
             sellerAvatar: t.seller_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
@@ -47,9 +49,7 @@ export const chatService = {
             online: t.is_online !== false,
             lastMsgTime: t.last_msg_time || 'Recently',
             unreadCount: t.unread_count || 0,
-            messages: threadMsgs.length > 0 ? threadMsgs : [
-              { id: `init-${t.id}`, sender: 'seller', text: `Hi! Thanks for reaching out regarding "${t.item_title}".`, time: 'Just now' }
-            ]
+            messages: threadMsgs
           };
         });
 
@@ -73,19 +73,20 @@ export const chatService = {
   /**
    * Send a new message in a thread (Persists to Supabase chat_messages)
    */
-  sendMessage: async (chatId, messageText) => {
+  sendMessage: async (chatId, messageText, senderUsername = 'User') => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     try {
       // 1. Insert message into Supabase chat_messages table
       await productSupabase.from('chat_messages').insert([{
-        thread_id: chatId.includes('-') && chatId.length > 30 ? chatId : null,
+        thread_id: (chatId.includes('-') && chatId.length > 30) || (chatId.length > 30) ? chatId : null,
         sender: 'user',
+        sender_username: senderUsername,
         text: messageText,
         sent_time: timeStr
       }]);
 
       // 2. Update last message time on thread
-      if (chatId.includes('-') && chatId.length > 30) {
+      if (chatId.length > 30) {
         await productSupabase
           .from('chat_threads')
           .update({ last_msg_time: 'Just now' })
@@ -100,6 +101,7 @@ export const chatService = {
     const newMsg = {
       id: `msg-${Date.now()}`,
       sender: 'user',
+      sender_username: senderUsername,
       text: messageText,
       time: timeStr
     };
