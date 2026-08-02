@@ -2647,9 +2647,16 @@ img {
 .chat-threads-scroll {
   flex: 1 1 0% !important;
   min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
 }
 
 .chat-header {
@@ -2798,6 +2805,10 @@ img {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
   box-sizing: border-box !important;
 }
 
