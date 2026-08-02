@@ -67,8 +67,8 @@ export default function LiveSearchInput({
   };
 
   const highlightMatch = (text, query) => {
-    if (!query) return text;
-    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    if (!query || !text) return text || '';
+    const parts = String(text).split(new RegExp(`(${query})`, 'gi'));
     return (
       <span>
         {parts.map((part, i) => 

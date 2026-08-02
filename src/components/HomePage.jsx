@@ -354,7 +354,7 @@ export function ProductCard({
         </div>
 
         <div className="product-footer-meta border-bottom pb-2 mb-2">
-          <span className="meta-item"><MapPin size={13} /> {product.location.split('(')[0]}</span>
+          <span className="meta-item"><MapPin size={13} /> {(product.location || 'Campus Location').split('(')[0]}</span>
           <span className="meta-item"><Clock size={13} /> {product.postedDate}</span>
         </div>
 

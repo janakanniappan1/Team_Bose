@@ -39,6 +39,7 @@ export const productService = {
           condition: row.condition || 'Good',
           postedDate: row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Recently',
           department: row.department || 'General',
+          location: row.pickup_preference || row.hostel || 'Campus Location',
           sellerId: row.user_id || row.seller_id || row.username || 'Campus Seller',
           seller_id: row.user_id || row.seller_id || row.username || 'Campus Seller',
           sellerName: row.username || 'Campus Seller',
