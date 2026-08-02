@@ -419,8 +419,8 @@ export default function App() {
 
       </main>
 
-      {/* Footer rendered except on auth pages */}
-      {activeView !== 'login' && (
+      {/* Footer rendered except on auth and messages pages */}
+      {activeView !== 'login' && activeView !== 'messages' && (
         <Footer setActiveView={navigateToView} />
       )}
 
