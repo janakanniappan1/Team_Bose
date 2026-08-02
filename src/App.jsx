@@ -244,8 +244,11 @@ export default function App() {
   };
 
   // Handle Delete Product
-  const handleDeleteProduct = async (productId) => {
-    await removeProduct(productId);
+  const handleDeleteProduct = async (productOrId) => {
+    const targetId = typeof productOrId === 'object' ? productOrId.id : productOrId;
+    const targetTitle = typeof productOrId === 'object' ? productOrId.title : null;
+    const sellerName = typeof productOrId === 'object' ? (productOrId.sellerName || productOrId.username) : null;
+    await removeProduct(targetId, targetTitle, sellerName);
     showToast('Listing removed successfully', 'info');
   };
 

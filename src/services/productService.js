@@ -31,41 +31,43 @@ export const productService = {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        const dbProducts = data.map((row) => ({
-          id: row.id || `db-${Date.now()}`,
-          title: row.product_name || 'Untitled Product',
-          price: row.selling_price || 0,
-          originalPrice: row.original_price || (row.selling_price ? row.selling_price * 1.3 : 0),
-          category: (row.Category || 'others').toLowerCase(),
-          condition: row.condition || 'Good',
-          postedDate: row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Recently',
-          department: row.department || 'General',
-          location: row.pickup_preference || row.hostel || 'Campus Location',
-          sellerId: row.user_id || row.seller_id || row.username || row.seller_name || null,
-          seller_id: row.user_id || row.seller_id || row.username || row.seller_name || null,
-          sellerName: row.username || row.seller_name || 'Campus Seller',
-          sellerDept: row.department || 'Student',
-          sellerYear: '3rd Year B.Tech',
-          sellerRating: 5.0,
-          sellerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-          images: (row.image_urls && row.image_urls.length > 0) 
-            ? row.image_urls.map(url => (url && url.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : url)
-            : ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80'],
-          videoUrl: row.video_url || null,
-          description: row.description || '',
-          negotiable: Boolean(row.negotiable),
-          brand: row.brand || '',
-          model: row.model || '',
-          purchaseYear: row.purchase_year || '',
-          reasonForSelling: row.reason || '',
-          featured: false,
-          popular: true,
-          recommended: true,
-          views: 10,
-          likes: 2,
-          badge: row.status || 'Active',
-          status: row.status || 'Approved'
-        }));
+        const dbProducts = data
+          .filter(row => row.status !== 'Deleted' && row.status !== 'deleted' && String(row.username || '').toLowerCase() !== 'ramaaa')
+          .map((row) => ({
+            id: row.id || `db-${Date.now()}`,
+            title: row.product_name || 'Untitled Product',
+            price: row.selling_price || 0,
+            originalPrice: row.original_price || (row.selling_price ? row.selling_price * 1.3 : 0),
+            category: (row.Category || 'others').toLowerCase(),
+            condition: row.condition || 'Good',
+            postedDate: row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Recently',
+            department: row.department || 'General',
+            location: row.pickup_preference || row.hostel || 'Campus Location',
+            sellerId: row.user_id || row.seller_id || row.username || row.seller_name || null,
+            seller_id: row.user_id || row.seller_id || row.username || row.seller_name || null,
+            sellerName: row.username || row.seller_name || 'Campus Seller',
+            sellerDept: row.department || 'Student',
+            sellerYear: '3rd Year B.Tech',
+            sellerRating: 5.0,
+            sellerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+            images: (row.image_urls && row.image_urls.length > 0) 
+              ? row.image_urls.map(url => (url && url.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : url)
+              : ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80'],
+            videoUrl: row.video_url || null,
+            description: row.description || '',
+            negotiable: Boolean(row.negotiable),
+            brand: row.brand || '',
+            model: row.model || '',
+            purchaseYear: row.purchase_year || '',
+            reasonForSelling: row.reason || '',
+            featured: false,
+            popular: true,
+            recommended: true,
+            views: 10,
+            likes: 2,
+            badge: row.status || 'Active',
+            status: row.status || 'Approved'
+          }));
 
         // Keep local cache synced with DB to eliminate phantom deleted items
         localStorage.setItem(PRODUCTS_KEY, JSON.stringify(dbProducts));

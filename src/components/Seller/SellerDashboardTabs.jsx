@@ -225,7 +225,7 @@ function SellerListingCard({
               <button className="btn btn-outline btn-sm flex-1" onClick={() => onEditProduct && onEditProduct(product)}>
                 <Edit3 size={13} /> Edit
               </button>
-              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product.id)}>
+              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product)}>
                 <Trash2 size={13} /> Delete
               </button>
             </>
@@ -252,7 +252,7 @@ function SellerListingCard({
               >
                 <DollarSign size={13} /> Price
               </button>
-              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product.id)} title="Remove Listing">
+              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product)} title="Remove Listing">
                 <Trash2 size={13} />
               </button>
             </>
@@ -263,7 +263,7 @@ function SellerListingCard({
               <button className="btn btn-primary btn-sm flex-1" onClick={() => onEditProduct && onEditProduct(product)}>
                 <Edit3 size={13} /> Edit & Resubmit
               </button>
-              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product.id)}>
+              <button className="btn btn-ghost btn-sm text-rose" onClick={() => onDeleteProduct(product)}>
                 <Trash2 size={13} /> Delete
               </button>
             </>
