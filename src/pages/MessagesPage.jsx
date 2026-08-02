@@ -111,7 +111,7 @@ export function MessagesPage({ currentUser, initialThreadId, initialChat, onGoBa
         <div className="chat-split-card card shadow-none border-0 overflow-hidden d-flex flex-row h-100">
 
           {/* Left Sidebar */}
-          <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`} style={{ flex: '0 0 340px' }}>
+          <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`}>
             <ChatSidebar
               threads={threads}
               activeThreadId={activeThreadId}

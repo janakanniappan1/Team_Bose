@@ -23,12 +23,14 @@ function MessageBubbleComponent({ message, isMe, onOpenProduct }) {
           isMe ? 'user-bubble' : 'seller-bubble'
         }`}
         style={{
-          maxWidth: '78%',
+          maxWidth: 'clamp(260px, 72%, 75%)',
           backgroundColor: isMe ? '#C85A32' : '#FFFFFF', // Terracotta for current user, White for opponent
           color: isMe ? '#FFFFFF' : '#1E293B',
           borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
           border: isMe ? 'none' : '1px solid #E2E8F0',
-          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere'
         }}
       >
         {/* Photo Message */}
