@@ -23,41 +23,59 @@ export const threadService = {
       if (error) { console.error('[threadService] getUserThreads:', error.message); return []; }
       if (!threads || threads.length === 0) return [];
 
+      const uIdStr = String(userId || '').trim().toLowerCase();
+      const uUsernameStr = String(userUsername || '').trim().toLowerCase();
+
       // Batch-fetch opponent profiles from DB1 users table
       const opponentIds = [...new Set(
-        threads.map(t => (t.buyer_id === userId || t.buyer_id === userUsername) ? t.seller_id : t.buyer_id)
+        threads.map(t => {
+          const bIdStr = String(t.buyer_id || '').trim().toLowerCase();
+          const isBuyer = (bIdStr === uIdStr) || (uUsernameStr && bIdStr === uUsernameStr);
+          return isBuyer ? t.seller_id : t.buyer_id;
+        })
       )];
 
       let usersMap = {};
       try {
-        const { data: usersById } = await supabase
+        const numericIds = opponentIds.filter(id => !isNaN(id));
+        const { data: usersById } = numericIds.length > 0 ? await supabase
           .from('users')
           .select('id, username, full_name')
-          .in('id', opponentIds);
+          .in('id', numericIds) : { data: [] };
 
         const { data: usersByUsername } = await supabase
           .from('users')
           .select('id, username, full_name')
           .in('username', opponentIds);
 
-        const allUsers = [...(usersById || []), ...(usersByUsername || [])];
+        const { data: usersByFullName } = await supabase
+          .from('users')
+          .select('id, username, full_name')
+          .in('full_name', opponentIds);
+
+        const allUsers = [...(usersById || []), ...(usersByUsername || []), ...(usersByFullName || [])];
 
         allUsers.forEach(u => {
           const profile = {
             id: u.id || u.username,
             username: u.username,
             full_name: u.full_name || u.username,
-            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`,
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username || u.full_name}`,
           };
-          if (u.id) usersMap[u.id] = profile;
+          if (u.id) {
+            usersMap[u.id] = profile;
+            usersMap[String(u.id)] = profile;
+          }
           if (u.username) usersMap[u.username] = profile;
+          if (u.full_name) usersMap[u.full_name] = profile;
         });
       } catch (e) { console.warn('[threadService] opponent fetch (non-fatal):', e); }
 
       return threads.map(thread => {
-        const isBuyer = thread.buyer_id === userId || thread.buyer_id === userUsername;
+        const bIdStr = String(thread.buyer_id || '').trim().toLowerCase();
+        const isBuyer = (bIdStr === uIdStr) || (uUsernameStr && bIdStr === uUsernameStr);
         const opponentId = isBuyer ? thread.seller_id : thread.buyer_id;
-        const opponent = usersMap[opponentId] || {
+        const opponent = usersMap[opponentId] || usersMap[String(opponentId)] || {
           id: opponentId,
           username: opponentId,
           full_name: opponentId || 'Campus Student',
