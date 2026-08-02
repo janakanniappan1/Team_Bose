@@ -94,9 +94,18 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
   // Helper: Get the OTHER participant's name for WhatsApp view (so Jana sees Rizwan, and Rizwan sees Jana)
   const getContactInfo = (thread) => {
     if (!thread) return { name: 'Campus User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80' };
-    const myNameLower = currentUserName.toLowerCase();
-    const isSellerMe = thread.sellerName && thread.sellerName.toLowerCase().includes(myNameLower);
     
+    const myNameLower = (currentUser?.fullName || '').toLowerCase();
+    const myFirstNameLower = (currentUser?.firstName || currentUser?.fullName || 'User').split(' ')[0].toLowerCase();
+    const myUsernameLower = (currentUser?.username || '').toLowerCase();
+
+    const sellerNameLower = (thread.sellerName || '').toLowerCase();
+    const sellerUserLower = (thread.sellerUsername || '').toLowerCase();
+
+    const isSellerMe = (sellerNameLower && sellerNameLower.includes(myFirstNameLower)) ||
+                       (sellerNameLower && myNameLower && sellerNameLower.includes(myNameLower)) ||
+                       (sellerUserLower && myUsernameLower && sellerUserLower === myUsernameLower);
+
     if (isSellerMe) {
       return {
         name: thread.buyerName || 'Rizwan',
@@ -472,22 +481,24 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
 
               {/* Messages Stream */}
               {activeThread.messages.map((msg) => {
-                const myName = (currentUser?.fullName || currentUser?.username || 'Jana K').toLowerCase();
+                const myFullName = (currentUser?.fullName || '').toLowerCase();
+                const myFirstName = (currentUser?.firstName || currentUser?.fullName || 'Jana').split(' ')[0].toLowerCase();
                 const myUsername = (currentUser?.username || '').toLowerCase();
                 const msgSender = (msg.sender_username || '').toLowerCase();
 
-                // Dynamic WhatsApp Alignment Rule:
-                // Messages sent by LOGGED-IN USER -> RIGHT (user-side / green bubble)
-                // Messages sent by OTHER PARTICIPANT -> LEFT (seller-side / gray bubble)
+                // WhatsApp / Instagram Side Rule:
+                // Messages sent by ME (Logged in user) -> RIGHT (user-side / green bubble)
+                // Messages sent by OPPONENT CONTACT -> LEFT (seller-side / gray bubble)
                 let isUser = false;
+
                 if (msgSender) {
-                  isUser = (msgSender === myName) || (myUsername && msgSender === myUsername) || msgSender.includes(myName) || (myUsername && msgSender.includes(myUsername));
-                } else if (msg.sender === 'user') {
-                  const isITheSeller = activeThread?.sellerName && activeThread.sellerName.toLowerCase().includes(myName);
-                  isUser = !isITheSeller;
-                } else if (msg.sender === 'seller') {
-                  const isITheSeller = activeThread?.sellerName && activeThread.sellerName.toLowerCase().includes(myName);
-                  isUser = isITheSeller;
+                  isUser = (myUsername && msgSender === myUsername) ||
+                           (myFullName && msgSender === myFullName) ||
+                           (myFirstName && msgSender.includes(myFirstName)) ||
+                           (myFullName && msgSender.includes(myFullName));
+                } else {
+                  const isITheSeller = activeThread?.sellerName && activeThread.sellerName.toLowerCase().includes(myFirstName);
+                  isUser = (msg.sender === 'user' && !isITheSeller) || (msg.sender === 'seller' && isITheSeller);
                 }
 
                 return (

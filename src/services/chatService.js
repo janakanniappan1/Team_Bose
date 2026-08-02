@@ -39,7 +39,9 @@ export const chatService = {
           return {
             id: t.id,
             sellerName: t.seller_name,
+            sellerUsername: t.seller_username || t.seller_name,
             buyerName: t.buyer_name || 'Rizwan',
+            buyerUsername: t.buyer_username || 'rizwan',
             sellerDept: t.seller_dept || 'Campus Member',
             sellerPhone: t.seller_phone || '',
             sellerAvatar: t.seller_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
@@ -142,11 +144,13 @@ export const chatService = {
       const { data: newThreadData, error } = await productSupabase
         .from('chat_threads')
         .insert([{
-          seller_name: product.sellerName || 'Campus Seller',
+          seller_name: product.sellerName || 'Jana K',
+          seller_username: product.sellerName || 'jana_k',
           seller_avatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
           seller_dept: product.sellerDept || 'Student',
           seller_phone: product.sellerPhone || '',
-          buyer_name: 'Jana K',
+          buyer_name: product.buyerName || 'Rizwan',
+          buyer_username: product.buyerUsername || 'rizwan',
           item_title: product.title || 'Campus Item',
           item_price: Number(product.price) || 0,
           item_image: (product.images && product.images[0]) ? product.images[0] : '',

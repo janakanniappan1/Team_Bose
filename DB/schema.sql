@@ -131,10 +131,12 @@ CREATE POLICY "Allow public insert buyer_orders" ON buyer_orders FOR INSERT WITH
 CREATE TABLE IF NOT EXISTS chat_threads (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   seller_name       TEXT NOT NULL,
+  seller_username   TEXT DEFAULT 'jana_k',
   seller_avatar     TEXT,
   seller_dept       TEXT,
   seller_phone      TEXT,
-  buyer_name        TEXT NOT NULL DEFAULT 'Jana K',
+  buyer_name        TEXT NOT NULL DEFAULT 'Rizwan',
+  buyer_username    TEXT DEFAULT 'rizwan',
   item_title        TEXT NOT NULL,
   item_price        INTEGER NOT NULL,
   item_image        TEXT,
