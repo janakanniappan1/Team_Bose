@@ -94,6 +94,17 @@ export const chatService = {
           .eq('id', threadId);
       }
 
+      // 3. Dispatch push notification to recipient only
+      if (recipientUsername && senderUsername && recipientUsername.toLowerCase().trim() !== senderUsername.toLowerCase().trim()) {
+        await notificationService.addNotification({
+          username: recipientUsername,
+          senderUsername: senderUsername,
+          title: `New Message from ${senderUsername} 💬`,
+          message: `"${(message || 'Message').length > 60 ? (message || 'Message').substring(0, 60) + '...' : (message || 'Message')}"`,
+          type: 'message'
+        });
+      }
+
       return newMsg;
     } catch (err) {
       console.error('[chatService] Send message error:', err);

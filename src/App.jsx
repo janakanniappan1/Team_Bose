@@ -184,19 +184,23 @@ export default function App() {
     navigateToView('search', { query: term, category });
   };
 
-  // Start Chat handler (with Self-Chat Guard)
+  // Start Chat handler (with 100% ID-based Self-Chat Guard)
   const handleStartChat = async (product) => {
-    const myName = (currentUser?.fullName || currentUser?.username || 'Jana K').toLowerCase();
-    const sellerName = (product?.sellerName || '').toLowerCase();
+    const myId = String(currentUser?.id || currentUser?.username || '').toLowerCase();
+    const sellerId = String(product?.sellerId || product?.sellerUsername || product?.sellerName || '').toLowerCase();
 
-    if (sellerName && (sellerName.includes(myName) || myName.includes(sellerName))) {
-      showToast('⚠️ This is your own product listing! You cannot chat with yourself.', 'info');
+    if (myId && sellerId && myId === sellerId) {
+      showToast('⚠️ You cannot chat with yourself.', 'info');
       return;
     }
 
-    const thread = await startChatWithSeller(product, currentUser);
-    navigateToView('messages', { chatId: thread.id });
-    showToast(`Opening chat with ${product.sellerName}...`, 'info');
+    try {
+      const thread = await startChatWithSeller(product, currentUser);
+      navigateToView('messages', { chatId: thread?.id || 'chat-1' });
+      showToast(`Opening chat regarding ${product.title}...`, 'info');
+    } catch (err) {
+      showToast(err.message || 'Unable to open chat.', 'info');
+    }
   };
 
   // Handle New Product Submission

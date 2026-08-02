@@ -126,25 +126,28 @@ CREATE POLICY "Allow public insert buyer_orders" ON buyer_orders FOR INSERT WITH
 
 -- ============================================================
 -- 💬 TABLE 5: chat_threads
--- Stores all active chat conversations between buyers & sellers
+-- Stores 1-on-1 conversations between buyers and sellers by User ID
 -- ============================================================
 CREATE TABLE IF NOT EXISTS chat_threads (
-  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  seller_name       TEXT NOT NULL,
-  seller_username   TEXT NOT NULL,
-  seller_avatar     TEXT,
-  seller_dept       TEXT,
-  seller_phone      TEXT,
-  buyer_name        TEXT NOT NULL,
-  buyer_username    TEXT NOT NULL,
-  buyer_avatar      TEXT,
-  item_title        TEXT NOT NULL,
-  item_price        INTEGER NOT NULL,
-  item_image        TEXT,
-  is_online         BOOLEAN DEFAULT TRUE,
-  unread_count      INTEGER DEFAULT 0,
-  last_msg_time     TEXT DEFAULT 'Just now',
-  created_at        TIMESTAMPTZ DEFAULT NOW()
+  id                 UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  buyer_id           TEXT NOT NULL,
+  seller_id          TEXT NOT NULL,
+  product_id         TEXT NULL,
+  seller_name        TEXT,
+  buyer_name         TEXT,
+  seller_avatar      TEXT,
+  buyer_avatar       TEXT,
+  item_title         TEXT NOT NULL,
+  item_price         INTEGER NOT NULL,
+  item_image         TEXT,
+  last_message       TEXT,
+  last_sender_id     TEXT,
+  last_message_time  TIMESTAMPTZ DEFAULT NOW(),
+  buyer_unread_count INTEGER DEFAULT 0,
+  seller_unread_count INTEGER DEFAULT 0,
+  created_at         TIMESTAMPTZ DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_buyer_seller_item UNIQUE (buyer_id, seller_id, item_title)
 );
 
 ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY;
@@ -155,35 +158,73 @@ CREATE POLICY "Allow public update chat_threads" ON chat_threads FOR UPDATE USIN
 
 -- ============================================================
 -- ✉️ TABLE 6: chat_messages
--- Stores full message history for every chat thread
+-- Stores full message history for every chat thread by User ID
 -- ============================================================
 CREATE TABLE IF NOT EXISTS chat_messages (
-  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  thread_id         UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
-  sender            TEXT NOT NULL, -- 'user' | 'seller'
-  sender_username   TEXT,
-  text              TEXT NOT NULL,
-  sent_time         TEXT DEFAULT 'Just now',
-  created_at        TIMESTAMPTZ DEFAULT NOW()
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  thread_id    UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
+  sender_id    TEXT NOT NULL,
+  receiver_id  TEXT NOT NULL,
+  message      TEXT NOT NULL,
+  message_type TEXT DEFAULT 'text', -- 'text' | 'image' | 'product_card' | 'offer_card' | 'system'
+  image_url    TEXT,
+  metadata     JSONB DEFAULT '{}'::jsonb,
+  is_seen      BOOLEAN DEFAULT FALSE,
+  is_delivered BOOLEAN DEFAULT TRUE,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public select chat_messages" ON chat_messages FOR SELECT USING (true);
 CREATE POLICY "Allow public insert chat_messages" ON chat_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update chat_messages" ON chat_messages FOR UPDATE USING (true);
 
 
 -- ============================================================
--- 🔔 TABLE 7: user_notifications
+-- 🟢 TABLE 7: user_presence
+-- Realtime online status and last seen timestamp by User ID
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_presence (
+  user_id    TEXT PRIMARY KEY,
+  is_online  BOOLEAN DEFAULT FALSE,
+  last_seen  TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_presence ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select user_presence" ON user_presence FOR SELECT USING (true);
+CREATE POLICY "Allow public all user_presence" ON user_presence FOR ALL USING (true);
+
+
+-- ============================================================
+-- ✍️ TABLE 8: typing_status
+-- Realtime typing status indicator by User ID
+-- ============================================================
+CREATE TABLE IF NOT EXISTS typing_status (
+  thread_id  UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
+  user_id    TEXT NOT NULL,
+  typing     BOOLEAN DEFAULT FALSE,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (thread_id, user_id)
+);
+
+ALTER TABLE typing_status ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select typing_status" ON typing_status FOR SELECT USING (true);
+CREATE POLICY "Allow public all typing_status" ON typing_status FOR ALL USING (true);
+
+
+-- ============================================================
+-- 🔔 TABLE 9: user_notifications
 -- Stores alerts and message notifications for users
 -- ============================================================
 CREATE TABLE IF NOT EXISTS user_notifications (
-  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  username          TEXT NOT NULL,
-  title             TEXT NOT NULL,
-  message           TEXT NOT NULL,
-  type              TEXT DEFAULT 'message', -- 'message' | 'sold' | 'price_drop' | 'offer'
-  unread            BOOLEAN DEFAULT TRUE,
-  created_at        TIMESTAMPTZ DEFAULT NOW()
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    TEXT,
+  username   TEXT NOT NULL,
+  title      TEXT NOT NULL,
+  message    TEXT NOT NULL,
+  type       TEXT DEFAULT 'message',
+  unread     BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;

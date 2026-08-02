@@ -5,25 +5,26 @@ export const threadService = {
   /**
    * Fetch all conversations for the authenticated user (Supports UUID and username sessions)
    */
+  /**
+   * Fetch all conversations for the authenticated user by User ID
+   */
   getThreads: async (currentUserId, currentUser = null) => {
-    try {
-      if (currentUserId && (currentUserId.includes('-') || currentUserId.length > 20)) {
-        const { data, error } = await productSupabase
-          .from('chat_threads')
-          .select(`
-            *,
-            buyer:profiles!chat_threads_buyer_id_fkey(*),
-            seller:profiles!chat_threads_seller_id_fkey(*)
-          `)
-          .or(`buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId}`)
-          .order('last_message_time', { ascending: false });
+    const userId = currentUserId || currentUser?.id || currentUser?.username;
+    if (!userId) return [];
 
-        if (!error && data && data.length > 0) {
-          return data;
-        }
+    try {
+      // 1. Fetch threads where user is buyer or seller
+      const { data, error } = await productSupabase
+        .from('chat_threads')
+        .select('*')
+        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+        .order('last_message_time', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data;
       }
     } catch (err) {
-      console.warn('[threadService] UUID threads fetch error:', err);
+      console.warn('[threadService] ID threads fetch error:', err);
     }
 
     // Fallback to chatService getChatThreads for smooth dual-user support
@@ -31,25 +32,28 @@ export const threadService = {
   },
 
   /**
-   * Find existing thread or create a new 1-on-1 buyer/seller thread
+   * Find existing thread or create a new 1-on-1 buyer/seller thread by User ID
    */
   getOrCreateThread: async ({ buyerId, sellerId, productId = null, productDetails = null }) => {
-    if (!buyerId || !sellerId) throw new Error('buyerId and sellerId are required to start a conversation.');
+    const bId = String(buyerId || '');
+    const sId = String(sellerId || '');
+
+    if (!bId || !sId) throw new Error('buyerId and sellerId are required to start a conversation.');
     
     // Self-chat guard
-    if (buyerId === sellerId) {
-      throw new Error('You cannot start a conversation with yourself.');
+    if (bId === sId) {
+      throw new Error('You cannot chat with yourself.');
     }
 
     try {
-      // 1. Check if thread already exists
+      // 1. Check if thread already exists by User IDs and Product Title
       let query = productSupabase
         .from('chat_threads')
         .select('*')
-        .or(`and(buyer_id.eq.${buyerId},seller_id.eq.${sellerId}),and(buyer_id.eq.${sellerId},seller_id.eq.${buyerId})`);
+        .or(`and(buyer_id.eq.${bId},seller_id.eq.${sId}),and(buyer_id.eq.${sId},seller_id.eq.${bId})`);
 
-      if (productId) {
-        query = query.eq('product_id', productId);
+      if (productDetails?.title) {
+        query = query.eq('item_title', productDetails.title);
       }
 
       const { data: existingThreads, error: searchError } = await query;
@@ -66,11 +70,16 @@ export const threadService = {
       const { data: newThread, error: createError } = await productSupabase
         .from('chat_threads')
         .insert([{
-          buyer_id: buyerId,
-          seller_id: sellerId,
+          buyer_id: bId,
+          seller_id: sId,
           product_id: productId,
+          seller_name: productDetails?.sellerName || 'Seller',
+          buyer_name: 'Buyer',
+          item_title: productDetails?.title || 'Campus Item',
+          item_price: Number(productDetails?.price) || 0,
+          item_image: (productDetails?.images && productDetails.images[0]) ? productDetails.images[0] : '',
           last_message: initialMessage,
-          last_sender_id: buyerId,
+          last_sender_id: bId,
           last_message_time: new Date().toISOString(),
           buyer_unread_count: 0,
           seller_unread_count: 1
@@ -83,8 +92,8 @@ export const threadService = {
       // 3. Create initial message in chat_messages
       await productSupabase.from('chat_messages').insert([{
         thread_id: newThread.id,
-        sender_id: buyerId,
-        receiver_id: sellerId,
+        sender_id: bId,
+        receiver_id: sId,
         message: initialMessage,
         message_type: productDetails ? 'product_card' : 'text',
         metadata: productDetails ? {
