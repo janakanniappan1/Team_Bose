@@ -59,7 +59,7 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-auto">
+      <div className="chat-threads-scroll">
         {filteredThreads.length === 0 ? (
           <div className="p-4 text-center text-muted">
             <MessageSquare size={32} className="mb-2 text-slate" />

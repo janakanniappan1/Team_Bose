@@ -2635,9 +2635,32 @@ img {
 
 /* WhatsApp Chat Wallpaper & Quick Reply Paste Enhancements */
 .chat-messages-body {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scroll-behavior: smooth !important;
   background-color: #efeae2 !important;
   background-image: radial-gradient(#cbd5e1 1px, transparent 1px) !important;
   background-size: 16px 16px !important;
+}
+
+.chat-threads-scroll {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.chat-header {
+  flex: 0 0 auto !important;
+}
+
+.message-input-bar {
+  flex: 0 0 auto !important;
 }
 
 .quick-reply-pill {
