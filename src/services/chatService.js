@@ -73,7 +73,7 @@ export const chatService = {
   /**
    * Send a new message in a thread (Persists to Supabase chat_messages)
    */
-  sendMessage: async (chatId, messageText, senderUsername = 'User') => {
+  sendMessage: async (chatId, messageText, senderUsername = 'User', recipientUsername = '') => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     try {
       // 1. Insert message into Supabase chat_messages table
@@ -92,6 +92,14 @@ export const chatService = {
           .update({ last_msg_time: 'Just now' })
           .eq('id', chatId);
       }
+
+      // 3. Trigger live push notification for recipient user
+      await notificationService.addNotification({
+        username: recipientUsername || 'Campus User',
+        title: `New Message from ${senderUsername} 💬`,
+        message: `"${messageText.length > 60 ? messageText.substring(0, 60) + '...' : messageText}"`,
+        type: 'message'
+      });
     } catch (err) {
       console.warn('[chatService] Supabase send error, updating locally:', err);
     }

@@ -13,6 +13,8 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifs();
+    const interval = setInterval(fetchNotifs, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const markAllRead = async () => {

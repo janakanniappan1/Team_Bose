@@ -170,8 +170,8 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
 
     setInputMessage('');
 
-    // 2. Persist to Supabase Database 2 (chat_messages table)
-    await chatService.sendMessage(targetChatId, text.trim(), currentUserName);
+    // 2. Persist to Supabase Database 2 (chat_messages table) & notify recipient
+    await chatService.sendMessage(targetChatId, text.trim(), currentUserName, activeContact.name);
   };
 
   const handleMakeOfferSubmit = async (amount, note) => {
