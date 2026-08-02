@@ -3,15 +3,19 @@ import { chatService } from '../services/chatService';
 import { productSupabase } from '../lib/supabase';
 
 export function useRealtimeMessages(threadId, currentUserId) {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    if (!threadId) return [];
+    try {
+      const saved = localStorage.getItem(`uniswap_msgs_${threadId}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
-  const threadIdRef = useRef(threadId);
 
-  useEffect(() => {
-    threadIdRef.current = threadId;
-  }, [threadId]);
-
+  // Load and merge messages from Supabase DB
   useEffect(() => {
     if (!threadId) {
       setMessages([]);
@@ -22,13 +26,39 @@ export function useRealtimeMessages(threadId, currentUserId) {
     let isMounted = true;
     setLoading(true);
 
-    // Initial fetch of latest 30 messages
-    chatService.getMessages(threadId, 30).then((data) => {
+    // Initial load from localStorage
+    try {
+      const saved = localStorage.getItem(`uniswap_msgs_${threadId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.length > 0) setMessages(parsed);
+      }
+    } catch (e) {
+      console.warn('[useRealtimeMessages] local cache read error:', e);
+    }
+
+    // Fetch latest messages from Supabase DB
+    chatService.getMessages(threadId, 50).then((data) => {
       if (isMounted) {
-        setMessages(data);
+        setMessages((prev) => {
+          const combined = [...prev, ...(data || [])];
+          const uniqueMap = new Map();
+          combined.forEach((msg) => {
+            const key = msg.id || `${msg.sender_id || msg.sender}_${msg.message || msg.text}_${msg.created_at || msg.time}`;
+            if (!uniqueMap.has(key)) {
+              uniqueMap.set(key, msg);
+            }
+          });
+          const result = Array.from(uniqueMap.values());
+          try {
+            localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(result));
+          } catch {}
+          return result;
+        });
+
         setLoading(false);
-        setHasMore(data.length >= 30);
-        // Mark received unread messages as seen
+        setHasMore((data || []).length >= 50);
+
         if (currentUserId) {
           chatService.markMessagesAsSeen(threadId, currentUserId);
         }
@@ -43,16 +73,18 @@ export function useRealtimeMessages(threadId, currentUserId) {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'chat_messages',
-          filter: `thread_id=eq.${threadId}`
+          table: 'chat_messages'
         },
         (payload) => {
           if (payload.new && isMounted) {
             setMessages((prev) => {
-              // Deduplicate if already inserted optimistically
-              const exists = prev.some((m) => m.id === payload.new.id);
+              const exists = prev.some((m) => m.id === payload.new.id || (m.message === payload.new.message && m.sender_id === payload.new.sender_id));
               if (exists) return prev;
-              return [...prev, payload.new];
+              const updated = [...prev, payload.new];
+              try {
+                localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
+              } catch {}
+              return updated;
             });
 
             if (currentUserId && payload.new.receiver_id === currentUserId) {
@@ -66,14 +98,17 @@ export function useRealtimeMessages(threadId, currentUserId) {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'chat_messages',
-          filter: `thread_id=eq.${threadId}`
+          table: 'chat_messages'
         },
         (payload) => {
           if (payload.new && isMounted) {
-            setMessages((prev) =>
-              prev.map((m) => (m.id === payload.new.id ? payload.new : m))
-            );
+            setMessages((prev) => {
+              const updated = prev.map((m) => (m.id === payload.new.id ? payload.new : m));
+              try {
+                localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
           }
         }
       )
@@ -91,12 +126,25 @@ export function useRealtimeMessages(threadId, currentUserId) {
     const oldestTimestamp = messages[0].created_at;
     const olderMsgs = await chatService.getMessages(threadId, 30, oldestTimestamp);
     if (olderMsgs.length < 30) setHasMore(false);
-    setMessages((prev) => [...olderMsgs, ...prev]);
+    setMessages((prev) => {
+      const combined = [...olderMsgs, ...prev];
+      const uniqueMap = new Map();
+      combined.forEach((m) => uniqueMap.set(m.id, m));
+      return Array.from(uniqueMap.values());
+    });
   };
 
-  // Optimistic UI append
+  // Optimistic UI append (Permanent insert)
   const addOptimisticMessage = (newMsg) => {
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((prev) => {
+      const exists = prev.some((m) => m.id === newMsg.id || (m.message === newMsg.message && m.sender_id === newMsg.sender_id));
+      if (exists) return prev;
+      const updated = [...prev, newMsg];
+      try {
+        localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   return { messages, loading, hasMore, loadMoreMessages, addOptimisticMessage };
