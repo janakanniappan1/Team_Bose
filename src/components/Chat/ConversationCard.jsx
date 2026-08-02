@@ -1,7 +1,7 @@
 import React from 'react';
 import { UnreadBadge } from './UnreadBadge';
 
-export function ConversationCard({ thread, currentUserId, isActive, onClick }) {
+export function ConversationCard({ thread, currentUserId, currentUser, isActive, onClick }) {
   if (!thread) return null;
 
   const isBuyer = String(thread.buyer_id).toLowerCase() === String(currentUserId).toLowerCase();
@@ -10,6 +10,21 @@ export function ConversationCard({ thread, currentUserId, isActive, onClick }) {
 
   const opponentName = opponent?.full_name || opponent?.username || (isBuyer ? (thread.seller_name || 'Seller') : (thread.buyer_name || 'Buyer'));
   const opponentAvatar = opponent?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentName}`;
+
+  const lastSenderStr = String(thread.last_sender_id || '').trim().toLowerCase();
+  const uIdStr = String(currentUserId || '').trim().toLowerCase();
+  const uUserStr = String(currentUser?.username || '').trim().toLowerCase();
+  const uNameStr = String(currentUser?.full_name || currentUser?.fullName || '').trim().toLowerCase();
+
+  const isLastSenderMe = lastSenderStr && (
+    lastSenderStr === uIdStr ||
+    (uUserStr && lastSenderStr === uUserStr) ||
+    (uNameStr && lastSenderStr === uNameStr)
+  );
+
+  const messageSnippet = thread.last_message
+    ? (isLastSenderMe ? `You: ${thread.last_message}` : thread.last_message)
+    : 'Start conversation...';
 
   const formattedTime = (timestamp) => {
     if (!timestamp) return '';
@@ -74,7 +89,7 @@ export function ConversationCard({ thread, currentUserId, isActive, onClick }) {
 
           <div className="d-flex align-items-center justify-content-between">
             <p className="text-muted m-0 text-truncate" style={{ fontSize: '0.82rem', maxWidth: '170px' }}>
-              {thread.last_message || 'Start conversation...'}
+              {messageSnippet}
             </p>
             <UnreadBadge count={unreadCount} />
           </div>

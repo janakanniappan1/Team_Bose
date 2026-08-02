@@ -71,6 +71,7 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
               key={thread.id}
               thread={thread}
               currentUserId={currentUserId}
+              currentUser={currentUser}
               isActive={thread.id === activeThreadId}
               onClick={() => onSelectThread(thread.id)}
             />
