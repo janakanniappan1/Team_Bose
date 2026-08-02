@@ -152,7 +152,7 @@ export function MessagesPage({ currentUser, initialThreadId, initialChat, onGoBa
               </>
             ) : (
               /* Empty Inbox View */
-              <div className="flex-1 d-flex flex-column align-items-center justify-content-center p-5 text-center">
+              <div className="chat-messages-body d-flex flex-column align-items-center justify-content-center p-5 text-center">
                 <div
                   className="mb-3 d-flex align-items-center justify-content-center mx-auto"
                   style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#EEF2FF', color: '#C85A32' }}

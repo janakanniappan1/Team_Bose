@@ -39,7 +39,7 @@ export function ChatMessages({
 
   if (loading && messages.length === 0) {
     return (
-      <div className="flex-1 d-flex align-items-center justify-content-center p-4">
+      <div className="chat-messages-body d-flex align-items-center justify-content-center p-4">
         <Loader2 size={24} className="animate-spin text-primary" />
       </div>
     );
@@ -49,7 +49,7 @@ export function ChatMessages({
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="chat-messages-body p-4 flex-1 overflow-auto"
+      className="chat-messages-body p-4"
       style={{
         backgroundColor: '#F8FAFC',
         backgroundImage: 'radial-gradient(#E2E8F0 1px, transparent 1px)',
