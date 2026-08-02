@@ -8,10 +8,16 @@ const getStoredProducts = () => {
     const stored = localStorage.getItem(PRODUCTS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return parsed.map(p => ({
-        ...p,
-        images: (p.images || []).map(img => (img && img.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : img)
-      }));
+      return parsed
+        .filter(p => {
+          const isDeleted = String(p.status || '').toLowerCase() === 'deleted';
+          const seller = String(p.sellerName || p.seller_name || p.username || p.sellerId || '').toLowerCase();
+          return !isDeleted && !seller.includes('ramaa');
+        })
+        .map(p => ({
+          ...p,
+          images: (p.images || []).map(img => (img && img.startsWith('blob:')) ? 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80' : img)
+        }));
     }
   } catch {
     // fallback
