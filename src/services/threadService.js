@@ -31,13 +31,20 @@ export const threadService = {
       const ids = [...new Set([userId, userUsername, userFullName].filter(Boolean))];
       const filter = ids.map(id => `buyer_id.eq.${id},seller_id.eq.${id}`).join(',');
 
-      const { data: threads, error } = await productSupabase
+      let { data: threads, error } = await productSupabase
         .from('uc_threads')
         .select('*')
         .or(filter)
         .order('last_message_time', { ascending: false });
 
-      if (error) { console.error('[threadService] getUserThreads:', error.message); return []; }
+      if (error) {
+        // Fallback query if last_message_time ordering fails or column differs
+        const fallbackRes = await productSupabase
+          .from('uc_threads')
+          .select('*')
+          .or(filter);
+        threads = fallbackRes.data || [];
+      }
       if (!threads || threads.length === 0) return [];
 
       const uIdStr = String(userId || '').trim().toLowerCase();

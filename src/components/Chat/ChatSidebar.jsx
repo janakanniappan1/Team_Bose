@@ -22,39 +22,39 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
   }, [threads]);
 
   return (
-    <div className="chat-sidebar border-right bg-white d-flex flex-column h-100 w-100">
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'hidden', backgroundColor: '#ffffff', borderRight: '1px solid #e2e8f0' }}>
       
-      {/* Top Header */}
-      <div className="px-3 border-bottom d-flex align-items-center justify-content-between" style={{ height: '64px', minHeight: '64px', maxHeight: '64px', flex: '0 0 64px', overflow: 'hidden' }}>
-        <div className="d-flex align-items-center gap-2">
+      {/* 1. Jana_133 Box at Top */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: '64px', minHeight: '64px', flex: '0 0 64px', width: '100%', padding: '0 16px', borderBottom: '1px solid #e2e8f0', boxSizing: 'border-box', backgroundColor: '#ffffff' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
           <img
             src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}
             alt="Profile"
-            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
           />
-          <div style={{ overflow: 'hidden', maxWidth: '200px' }}>
-            <h4 className="font-heading m-0 text-truncate" style={{ fontSize: '0.95rem', fontWeight: '700' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1, minWidth: 0 }}>
+            <h4 className="font-heading m-0 text-truncate" style={{ fontSize: '0.95rem', fontWeight: '700', lineHeight: 1.2, color: '#1e293b' }}>
               {currentUser?.full_name || currentUser?.fullName || currentUser?.username || 'Messages'}
             </h4>
-            <span className="text-muted text-truncate d-block" style={{ fontSize: '0.75rem' }}>
+            <span className="text-muted text-truncate" style={{ fontSize: '0.75rem', lineHeight: 1.2 }}>
               {totalUnread > 0 ? `${totalUnread} unread messages` : 'Direct Messages'}
             </span>
           </div>
         </div>
 
-        <button className="btn btn-ghost btn-sm icon-btn" title="New Message">
+        <button className="btn btn-ghost btn-sm icon-btn" style={{ flexShrink: 0 }} title="New Message">
           <Edit3 size={18} />
         </button>
       </div>
 
-      {/* Instant Search Box */}
-      <div className="p-3 border-bottom">
-        <div className="threads-search-box position-relative">
+      {/* 2. Search Input Directly BELOW Jana_133 Box */}
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', flex: '0 0 auto', boxSizing: 'border-box', backgroundColor: '#ffffff' }}>
+        <div className="threads-search-box position-relative w-100">
           <Search size={16} style={{ position: 'absolute', left: '12px', top: '10px', color: '#94A3B8' }} />
           <input
             type="text"
             className="form-input btn-sm w-100"
-            style={{ paddingLeft: '36px', borderRadius: '20px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+            style={{ paddingLeft: '36px', borderRadius: '20px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', boxSizing: 'border-box', width: '100%' }}
             placeholder="Search conversations or items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -62,8 +62,8 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
         </div>
       </div>
 
-      {/* Conversation List */}
-      <div className="chat-threads-scroll">
+      {/* 3. Contacts of Previous Chats from Database Directly BELOW Search */}
+      <div className="chat-threads-scroll" style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0%', minHeight: 0, overflowY: 'auto', width: '100%', boxSizing: 'border-box' }}>
         {filteredThreads.length === 0 ? (
           <div className="p-4 text-center text-muted">
             <MessageSquare size={32} className="mb-2 text-slate" />

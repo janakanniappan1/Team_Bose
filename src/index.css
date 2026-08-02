@@ -185,24 +185,15 @@ img {
   background: var(--slate-400);
 }
 
-/* App Container & Main Content Viewport Lock */
+/* App Container & Main Content */
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
-  overflow: hidden;
+  min-height: 100vh;
   width: 100%;
 }
 .main-content {
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-  min-width: 0 !important;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  flex: 1 1 auto;
   width: 100%;
 }
 .container {
@@ -2694,20 +2685,30 @@ img {
    UNI-SWAP CHAT WORKSPACE — PRODUCTION LAYOUT SPECIFICATION
    ============================================================ */
 
-/* 1. Main Page Container */
-.messages-page-container {
+/* 1. Page Base Properties */
+html,
+body,
+#root {
     width: 100%;
-    height: calc(100dvh - 72px) !important;
-    overflow: hidden !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    min-height: 0 !important;
-    min-width: 0 !important;
+    margin: 0;
+    padding: 0;
 }
 
-/* 2. Split Layout */
+/* 2. Main Page Container */
+.messages-page-container {
+    flex: 1;
+    width: 100%;
+    height: calc(100dvh - 72px);
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+    min-width: 0;
+}
+
+/* Split Layout */
 .chat-split-card {
     flex: 1;
     display: flex;
@@ -2722,64 +2723,80 @@ img {
     overflow: hidden !important;
 }
 
-/* 3. Sidebar */
+/* 3. Fixed Unshrinkable Sidebar (320px) */
 .chat-sidebar-wrapper {
-    width: 320px;
-    min-width: 320px;
-    max-width: 320px;
+    flex: 0 0 320px !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    flex-shrink: 0 !important;
 
-    height: 100%;
+    height: 100% !important;
 
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
 
-    min-height: 0;
-    overflow: hidden;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
 /* 4. Contact List Scroll Area */
 .chat-threads-scroll {
-    flex: 1;
+    flex: 1 1 0% !important;
 
-    min-height: 0;
+    min-height: 0 !important;
 
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 
-    display: flex;
-    flex-direction: column;
+    scroll-behavior: smooth !important;
+    overscroll-behavior: contain !important;
+
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* 5. Chat Window Wrapper */
+/* 5. Chat Window Wrapper (Expands to fill remaining width) */
 .chat-window-wrapper {
-    flex: 1;
+    flex: 1 1 0% !important;
+    flex-grow: 1 !important;
 
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
 
-    min-height: 0;
-    min-width: 0;
+    min-height: 0 !important;
+    min-width: 0 !important;
 
-    overflow: hidden;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
-/* 6. Chat Header */
+/* 7. Sticky Chat Header */
 .chat-header {
+    position: sticky;
+    top: 0;
+
     flex: 0 0 64px;
 
     height: 64px;
 
+    z-index: 20;
+
     overflow: hidden;
 }
 
-/* 7. Message Body */
+/* 4. Message Body */
 .chat-messages-body {
-    flex: 1;
+    flex: 1 1 auto;
 
     min-height: 0;
 
     overflow-y: auto;
     overflow-x: hidden;
+
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
 
     display: flex;
     flex-direction: column;
@@ -2789,30 +2806,22 @@ img {
     padding: 20px;
 }
 
-/* 8. Message Input Bar */
+/* 6. Sticky Message Input Bar */
 .message-input-bar {
-    flex: 0 0 auto;
+    flex-shrink: 0;
 
-    position: relative;
+    position: sticky;
+    bottom: 0;
+    left: 0;
 
     z-index: 20;
 
     background: #fff;
 }
 
-/* 9. Page Overflow Protection */
-html,
-body,
-#root {
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-}
-
-/* 10. Message Bubble Wrapping */
+/* 8. Message Bubble Wrapping */
 .message-bubble {
-    max-width: 70%;
+    max-width: min(72%, 520px);
 
     width: fit-content;
 
@@ -2821,6 +2830,23 @@ body,
     overflow-wrap: anywhere;
 
     white-space: pre-wrap;
+}
+
+/* 9. Scrollbar Styling */
+.chat-messages-body::-webkit-scrollbar,
+.chat-threads-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-messages-body::-webkit-scrollbar-thumb,
+.chat-threads-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.chat-messages-body::-webkit-scrollbar-thumb:hover,
+.chat-threads-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 /* Mobile Responsive Adjustments */
