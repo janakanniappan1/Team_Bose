@@ -317,7 +317,7 @@ export default function UserDashboardPage({
 
             {/* MESSAGES */}
             {activeTab === 'messages' && (
-              <div style={{ height: 'calc(100vh - 140px)', minHeight: '520px', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ height: 'calc(100vh - 72px)', height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'hidden', margin: '-1.5rem -1rem -1.5rem -1rem' }}>
                 <MessagesView
                   currentUser={user}
                   onSelectProduct={onSelectProduct}
