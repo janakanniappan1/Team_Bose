@@ -67,12 +67,13 @@ export const productService = {
           status: row.status || 'Approved'
         }));
 
+        // Keep local cache synced with DB to eliminate phantom deleted items
+        localStorage.setItem(PRODUCTS_KEY, JSON.stringify(dbProducts));
         return dbProducts;
       }
     } catch (err) {
       console.warn('[productService] Supabase fetch failed:', err);
     }
-    // If Supabase returned nothing or errored, return locally cached user-created products
     return getStoredProducts();
   },
 
@@ -139,22 +140,24 @@ export const productService = {
   /**
    * Delete a product by ID (Deletes locally AND from Supabase user_imagesss table for all users)
    */
-  async deleteProduct(productId) {
+  async deleteProduct(productId, productTitle = null, sellerName = null) {
     const products = getStoredProducts();
-    const updated = products.filter((p) => p.id !== productId);
+    const updated = products.filter((p) => p.id !== productId && (productTitle ? p.title !== productTitle : true));
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(updated));
 
     // Delete from Supabase Database (user_imagesss table)
     try {
-      const { error } = await productSupabase
-        .from('user_imagesss')
-        .delete()
-        .eq('id', productId);
+      if (productId) {
+        await productSupabase
+          .from('user_imagesss')
+          .delete()
+          .eq('id', productId);
+      }
 
-      if (error) {
-        console.error('[Supabase] Delete product error:', error.message);
-      } else {
-        console.log('[Supabase] Successfully deleted product:', productId);
+      if (productTitle) {
+        let query = productSupabase.from('user_imagesss').delete().eq('product_name', productTitle);
+        if (sellerName) query = query.eq('username', sellerName);
+        await query;
       }
     } catch (err) {
       console.error('[Supabase] Delete product exception:', err);
