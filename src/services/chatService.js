@@ -209,10 +209,41 @@ export const chatService = {
         // Add notification for seller
         await notificationService.addNotification({
           username: sellerFullName,
+          senderUsername: buyerFullName,
           title: `New Inquiry from ${buyerFullName} 💬`,
           message: `Conversation started regarding "${product.title}".`,
           type: 'message'
         });
+
+        const createdThread = {
+          id: threadId,
+          sellerName: sellerFullName,
+          sellerUsername: sellerUsername,
+          sellerAvatar: product.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+          buyerName: buyerFullName,
+          buyerUsername: buyerUsername,
+          buyerAvatar: buyerAvatar,
+          itemTitle: product.title,
+          itemPrice: product.price,
+          itemImage: product.images ? product.images[0] : '',
+          online: true,
+          lastMsgTime: 'Just now',
+          unreadCount: 0,
+          messages: [
+            {
+              id: `msg-init-${Date.now()}`,
+              sender: 'user',
+              sender_username: buyerFullName,
+              text: initialText,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ]
+        };
+
+        const existingLocal = await chatService.getChatThreads(currentUser);
+        const updatedLocal = [createdThread, ...existingLocal.filter(t => t.id !== threadId)];
+        localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(updatedLocal));
+        return createdThread;
       }
     } catch (err) {
       console.warn('[chatService] Error creating chat in Supabase:', err);
