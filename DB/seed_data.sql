@@ -233,3 +233,29 @@ INSERT INTO buyer_orders (
   'Engineering Mathematics Vol 1 & 2 Textbook', 450, 'Jana K', 'jana.k@campus.edu', 'Priya Patel', 'SAC Canteen', 'Completed'
 );
 
+
+-- ============================================================
+-- SEED: chat_threads & chat_messages table (User Conversations)
+-- ============================================================
+INSERT INTO chat_threads (
+  seller_name, seller_avatar, seller_dept, seller_phone, buyer_name,
+  item_title, item_price, item_image, is_online, unread_count, last_msg_time
+) VALUES
+(
+  'Ananya Sharma',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+  'Computer Science & Engineering', '+91 98765 43210', 'Jana K',
+  'Casio fx-991EX Calculator', 950,
+  'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=250&q=80',
+  true, 1, '10:45 AM'
+),
+(
+  'Rohan Verma',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+  'Mechanical Engineering', '+91 98123 45678', 'Jana K',
+  'Hero Sprint 24T Cycle', 3400,
+  'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=250&q=80',
+  false, 0, 'Yesterday'
+);
+
+

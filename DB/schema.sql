@@ -123,3 +123,49 @@ ALTER TABLE buyer_orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public select buyer_orders" ON buyer_orders FOR SELECT USING (true);
 CREATE POLICY "Allow public insert buyer_orders" ON buyer_orders FOR INSERT WITH CHECK (true);
 
+
+-- ============================================================
+-- 💬 TABLE 5: chat_threads
+-- Stores all active chat conversations between buyers & sellers
+-- ============================================================
+CREATE TABLE IF NOT EXISTS chat_threads (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  seller_name       TEXT NOT NULL,
+  seller_avatar     TEXT,
+  seller_dept       TEXT,
+  seller_phone      TEXT,
+  buyer_name        TEXT NOT NULL DEFAULT 'Jana K',
+  item_title        TEXT NOT NULL,
+  item_price        INTEGER NOT NULL,
+  item_image        TEXT,
+  is_online         BOOLEAN DEFAULT TRUE,
+  unread_count      INTEGER DEFAULT 0,
+  last_msg_time     TEXT DEFAULT 'Just now',
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select chat_threads" ON chat_threads FOR SELECT USING (true);
+CREATE POLICY "Allow public insert chat_threads" ON chat_threads FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update chat_threads" ON chat_threads FOR UPDATE USING (true);
+
+
+-- ============================================================
+-- ✉️ TABLE 6: chat_messages
+-- Stores full message history for every chat thread
+-- ============================================================
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  thread_id         UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
+  sender            TEXT NOT NULL, -- 'user' | 'seller'
+  sender_username   TEXT,
+  text              TEXT NOT NULL,
+  sent_time         TEXT DEFAULT 'Just now',
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select chat_messages" ON chat_messages FOR SELECT USING (true);
+CREATE POLICY "Allow public insert chat_messages" ON chat_messages FOR INSERT WITH CHECK (true);
+
+

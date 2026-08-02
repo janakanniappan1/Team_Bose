@@ -132,6 +132,31 @@ CREATE TABLE IF NOT EXISTS user_images (
 | pickup_location | TEXT | Designated campus pickup spot |
 | status | TEXT | Pending Pickup / Completed / Cancelled |
 
+### Table: `chat_threads` (User Conversations)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Primary Key |
+| seller_name | TEXT | Seller's name |
+| seller_avatar | TEXT | Avatar image URL |
+| seller_dept | TEXT | Department |
+| seller_phone | TEXT | Contact number |
+| buyer_name | TEXT | Buyer's name |
+| item_title | TEXT | Item being discussed |
+| item_price | INTEGER | Item price in ₹ |
+| item_image | TEXT | Item image URL |
+| is_online | BOOLEAN | Online status |
+| unread_count | INTEGER | Unread message count |
+| last_msg_time | TEXT | Timestamp of last message |
+
+### Table: `chat_messages` (Message History)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | Message ID |
+| thread_id | UUID | Foreign Key → `chat_threads(id)` |
+| sender | TEXT | `'user'` or `'seller'` |
+| text | TEXT | Content of message |
+| sent_time | TEXT | Time sent |
+
 ---
 
 ## 🔵 Setup Instructions for Both Databases
