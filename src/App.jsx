@@ -368,6 +368,7 @@ export default function App() {
 
         {activeView === 'messages' && (
           <MessagesView
+            currentUser={currentUser}
             initialChat={activeChat}
             onSelectProduct={handleSelectProduct}
             onGoBack={handleGoBack}

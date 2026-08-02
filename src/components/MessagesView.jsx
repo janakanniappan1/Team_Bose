@@ -28,7 +28,7 @@ import OfferCard from './Chat/OfferCard';
 import { addOffer } from '../services/userService';
 import { notificationService } from '../services/notificationService';
 
-export default function MessagesView({ initialChat, onSelectProduct, onGoBack }) {
+export default function MessagesView({ currentUser, initialChat, onSelectProduct, onGoBack }) {
   const [chatThreads, setChatThreads] = useState(() => {
     try {
       const saved = localStorage.getItem('uniswap_chat_threads');
@@ -97,9 +97,12 @@ export default function MessagesView({ initialChat, onSelectProduct, onGoBack })
     if (!text || !text.trim()) return;
 
     const formattedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const currentUserName = currentUser?.fullName || currentUser?.username || 'User';
+
     const newMsg = {
       id: `m-${Date.now()}`,
       sender: 'user',
+      sender_username: currentUserName,
       text: text.trim(),
       time: formattedTime,
       status: 'read'
@@ -149,6 +152,7 @@ export default function MessagesView({ initialChat, onSelectProduct, onGoBack })
       const sellerMsg = {
         id: `m-seller-${Date.now()}`,
         sender: 'seller',
+        sender_username: activeThread?.sellerName || 'Seller',
         text: replyText,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -466,7 +470,24 @@ export default function MessagesView({ initialChat, onSelectProduct, onGoBack })
 
               {/* Messages Stream */}
               {activeThread.messages.map((msg) => {
-                const isUser = msg.sender === 'user';
+                const myName = (currentUser?.fullName || currentUser?.username || 'Jana K').toLowerCase();
+                const myUsername = (currentUser?.username || '').toLowerCase();
+                const msgSender = (msg.sender_username || '').toLowerCase();
+
+                // Dynamic WhatsApp Alignment Rule:
+                // Messages sent by LOGGED-IN USER -> RIGHT (user-side / green bubble)
+                // Messages sent by OTHER PARTICIPANT -> LEFT (seller-side / gray bubble)
+                let isUser = false;
+                if (msgSender) {
+                  isUser = (msgSender === myName) || (myUsername && msgSender === myUsername) || msgSender.includes(myName) || (myUsername && msgSender.includes(myUsername));
+                } else if (msg.sender === 'user') {
+                  const isITheSeller = activeThread?.sellerName && activeThread.sellerName.toLowerCase().includes(myName);
+                  isUser = !isITheSeller;
+                } else if (msg.sender === 'seller') {
+                  const isITheSeller = activeThread?.sellerName && activeThread.sellerName.toLowerCase().includes(myName);
+                  isUser = isITheSeller;
+                }
+
                 return (
                   <div key={msg.id} className={`message-row ${isUser ? 'user-side' : 'seller-side'} mb-3`}>
                     
