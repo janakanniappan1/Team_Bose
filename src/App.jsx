@@ -218,7 +218,9 @@ export default function App() {
   const handleProductSubmitted = async (newProduct) => {
     const formattedProduct = {
       ...newProduct,
-      sellerName: currentUser?.fullName || 'Jana K',
+      sellerId: currentUser?.id || currentUser?.authId || currentUser?.username || 'seller-user',
+      seller_id: currentUser?.id || currentUser?.authId || currentUser?.username || 'seller-user',
+      sellerName: currentUser?.full_name || currentUser?.fullName || currentUser?.username || 'Campus Seller',
       sellerAvatar: currentUser?.avatar || newProduct.sellerAvatar,
       status: 'Approved' // Ensure it immediately displays under My Active Products!
     };

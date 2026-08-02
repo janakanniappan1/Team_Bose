@@ -21,11 +21,11 @@ import { threadService } from '../services/threadService';
 // ============================================================
 
 export function useChat(currentUser, initialThreadId = null) {
-  // ── Resolve current user UUID ────────────────────────────
-  // MUST be the UUID from users.id — never fall back to username
-  const currentUserId = currentUser?.id || currentUser?.authId || null;
+  // ── Resolve current user ID & Username ────────────────────────
+  const currentUserId = currentUser?.id || currentUser?.authId || currentUser?.username || null;
+  const currentUsername = currentUser?.username || null;
 
-  const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId);
+  const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId, currentUsername);
   const [activeThreadId, setActiveThreadId] = useState(initialThreadId || null);
 
   // ── Auto-select initial thread ────────────────────────────
@@ -40,26 +40,26 @@ export function useChat(currentUser, initialThreadId = null) {
   // ── Find active thread object ─────────────────────────────
   const activeThread = threads.find(t => t.id === activeThreadId) || null;
 
-  // ── Resolve opponent profile (pure UUID, pre-loaded by threadService) ──
+  // ── Resolve opponent profile ─────────────────────────────
   const getOpponentProfile = useCallback((thread) => {
     if (!thread || !currentUserId) return null;
 
-    // thread.opponent is already resolved by threadService.getUserThreads()
-    if (thread.opponent && thread.opponent.id) {
+    if (thread.opponent && thread.opponent.id && thread.opponent.full_name !== 'Campus User') {
       return thread.opponent;
     }
 
-    // Fallback: determine from buyer_id/seller_id
-    const isBuyer = thread.buyer_id === currentUserId;
+    const isBuyer = String(thread.buyer_id).toLowerCase() === String(currentUserId).toLowerCase() ||
+                    (currentUsername && String(thread.buyer_id).toLowerCase() === String(currentUsername).toLowerCase());
     const opponentId = isBuyer ? thread.seller_id : thread.buyer_id;
+    const fallbackName = (isBuyer ? thread.seller_name : thread.buyer_name) || opponentId || 'Campus Student';
 
     return {
       id: opponentId || null,
-      username: 'User',
-      full_name: 'Campus User',
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentId}`,
+      username: opponentId || 'User',
+      full_name: (thread.opponent?.full_name && thread.opponent?.full_name !== 'Campus User') ? thread.opponent.full_name : fallbackName,
+      avatar_url: thread.opponent?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentId}`,
     };
-  }, [currentUserId]);
+  }, [currentUserId, currentUsername]);
 
   const opponentProfile = getOpponentProfile(activeThread);
   const opponentId = opponentProfile?.id || null;

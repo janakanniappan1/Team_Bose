@@ -51,10 +51,12 @@ export const authService = {
     if (fullName.trim()) saveNameLocally(username, fullName.trim());
 
     if (!isSupabaseConfigured()) {
+      const nameVal = fullName.trim() || username;
       const mockUser = {
         id: 'demo-' + Date.now(),
         username,
-        full_name: fullName.trim() || username,
+        full_name: nameVal,
+        fullName: nameVal,
         created_at: new Date().toISOString()
       };
       localStorage.setItem(SESSION_USER_KEY, JSON.stringify(mockUser));
@@ -73,11 +75,13 @@ export const authService = {
 
       if (error) throw error;
 
+      const resolvedName = data[0]?.full_name || fullName.trim() || username;
       return {
         data: {
           id: data[0]?.id,
           username,
-          full_name: data[0]?.full_name || fullName.trim() || username,
+          full_name: resolvedName,
+          fullName: resolvedName,
           created_at: data[0]?.created_at
         },
         error: null
@@ -96,10 +100,12 @@ export const authService = {
    */
   async login(username, password) {
     if (!isSupabaseConfigured()) {
+      const resolvedName = getNameLocally(username) || username;
       const demoUser = {
         id: 'demo-' + Date.now(),
         username,
-        full_name: getNameLocally(username) || username,
+        full_name: resolvedName,
+        fullName: resolvedName,
         created_at: new Date().toISOString()
       };
       localStorage.setItem(SESSION_USER_KEY, JSON.stringify(demoUser));
@@ -128,6 +134,7 @@ export const authService = {
           id: user.id,
           username: user.username,
           full_name: fullName,
+          fullName: fullName,
           created_at: user.created_at
         },
         error: null
@@ -200,7 +207,15 @@ export const authService = {
    */
   async getCurrentUser() {
     const stored = localStorage.getItem(SESSION_USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed && !parsed.fullName && parsed.full_name) parsed.fullName = parsed.full_name;
+      if (parsed && !parsed.full_name && parsed.fullName) parsed.full_name = parsed.fullName;
+      return parsed;
+    } catch {
+      return null;
+    }
   },
 
   /**
@@ -218,6 +233,7 @@ export const authService = {
       id: 'guest-' + Math.floor(1000 + Math.random() * 9000),
       username: 'Guest Explorer',
       full_name: 'Guest Explorer',
+      fullName: 'Guest Explorer',
       created_at: new Date().toISOString(),
       role: 'guest'
     };

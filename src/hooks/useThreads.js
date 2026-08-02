@@ -12,7 +12,7 @@ import { productSupabase } from '../lib/supabase';
 //   - Expose refreshThreads for manual refresh
 // ============================================================
 
-export function useThreads(currentUserId) {
+export function useThreads(currentUserId, currentUsername = null) {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,14 +24,14 @@ export function useThreads(currentUserId) {
     }
 
     try {
-      const data = await threadService.getUserThreads(currentUserId);
+      const data = await threadService.getUserThreads(currentUserId, currentUsername);
       setThreads(data);
     } catch (err) {
       console.error('[useThreads] loadThreads error:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, currentUsername]);
 
   useEffect(() => {
     loadThreads();
