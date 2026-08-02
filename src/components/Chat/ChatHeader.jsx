@@ -9,30 +9,30 @@ export function ChatHeader({ opponent, targetPresence, onGoBack, onToggleInfo, o
   const lastSeen = targetPresence?.last_seen;
 
   return (
-    <div className="chat-header p-3 border-bottom bg-white d-flex align-items-center justify-content-between shadow-sm" style={{ minHeight: '68px' }}>
+    <div className="chat-header px-3 border-bottom bg-white d-flex align-items-center justify-content-between shadow-sm" style={{ height: '64px', minHeight: '64px', maxHeight: '64px', flex: '0 0 64px', overflow: 'hidden' }}>
       
       {/* Left: Back Button & User Info */}
-      <div className="d-flex align-items-center gap-3">
+      <div className="d-flex align-items-center gap-3 overflow-hidden">
         <button className="btn btn-ghost btn-sm icon-btn hide-desktop" onClick={onGoBack} title="Back to Conversations">
           <ArrowLeft size={20} />
         </button>
 
-        <div className="d-flex align-items-center gap-3">
-          <div className="position-relative">
+        <div className="d-flex align-items-center gap-3 overflow-hidden">
+          <div className="position-relative flex-shrink-0">
             <img
               src={opponentAvatar}
               alt={opponentName}
-              style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
+              style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
             />
           </div>
 
-          <div>
-            <div className="d-flex align-items-center gap-2">
-              <h4 className="font-heading m-0" style={{ fontSize: '1.05rem', fontWeight: '700' }}>
+          <div className="overflow-hidden">
+            <div className="d-flex align-items-center gap-2 overflow-hidden">
+              <h4 className="font-heading m-0 text-truncate" style={{ fontSize: '0.98rem', fontWeight: '700', maxWidth: '180px' }}>
                 {opponentName}
               </h4>
-              <span className="badge badge-primary d-inline-flex align-items-center gap-1" style={{ fontSize: '0.68rem', padding: '2px 6px' }}>
-                <ShieldCheck size={12} /> Verified
+              <span className="badge badge-primary d-inline-flex align-items-center gap-1 flex-shrink-0" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                <ShieldCheck size={10} /> Verified
               </span>
             </div>
             <OnlineIndicator isOnline={isOnline} lastSeen={lastSeen} size={10} />

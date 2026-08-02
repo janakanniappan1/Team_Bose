@@ -25,7 +25,7 @@ export function ChatSidebar({ threads, activeThreadId, onSelectThread, currentUs
     <div className="chat-sidebar border-right bg-white d-flex flex-column h-100 w-100">
       
       {/* Top Header */}
-      <div className="p-3 border-bottom d-flex align-items-center justify-content-between">
+      <div className="px-3 border-bottom d-flex align-items-center justify-content-between" style={{ height: '64px', minHeight: '64px', maxHeight: '64px', flex: '0 0 64px', overflow: 'hidden' }}>
         <div className="d-flex align-items-center gap-2">
           <img
             src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}

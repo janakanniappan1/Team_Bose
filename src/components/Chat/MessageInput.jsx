@@ -47,10 +47,10 @@ export function MessageInput({ onSendMessage, onSendImage, onTyping, onMakeOffer
   };
 
   return (
-    <div className="message-input-bar p-3 border-top bg-white">
+    <div className="message-input-bar p-3 border-top bg-white" style={{ flex: '0 0 auto', width: '100%', boxSizing: 'border-box' }}>
       
       {/* Quick Reply Chips */}
-      <div className="d-flex align-items-center gap-2 mb-2 overflow-x-auto pb-1">
+      <div className="d-flex align-items-center gap-2 mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <span className="text-muted" style={{ fontSize: '0.72rem', whiteSpace: 'nowrap' }}>Quick:</span>
         {QUICK_REPLIES.map((reply, i) => (
           <button
