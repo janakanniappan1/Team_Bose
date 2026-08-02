@@ -8,7 +8,11 @@ export const chatService = {
   /**
    * Fetch all chat threads & message history (Supabase DB + Local Storage)
    */
-  getChatThreads: async () => {
+  getChatThreads: async (currentUser = null) => {
+    const myName = (currentUser?.fullName || currentUser?.username || '').toLowerCase().trim();
+    const myFirstName = (currentUser?.firstName || currentUser?.fullName || '').split(' ')[0].toLowerCase().trim();
+    const myUsername = (currentUser?.username || '').toLowerCase().trim();
+
     try {
       // 1. Fetch threads from Supabase
       const { data: threadsData, error: threadsError } = await productSupabase
@@ -17,15 +21,31 @@ export const chatService = {
         .order('created_at', { ascending: false });
 
       if (!threadsError && threadsData && threadsData.length > 0) {
-        // Fetch all messages for these threads
-        const threadIds = threadsData.map(t => t.id);
+        // Filter threads for logged in user + purge invalid self-threads
+        const validThreads = threadsData.filter((t) => {
+          const sellerName = (t.seller_name || '').toLowerCase();
+          const sellerUser = (t.seller_username || '').toLowerCase();
+          const buyerName = (t.buyer_name || '').toLowerCase();
+          const buyerUser = (t.buyer_username || '').toLowerCase();
+
+          // Purge legacy test rows with identical seller & buyer names containing 'jana k'
+          if (sellerName === buyerName && sellerName.includes('jana k')) return false;
+
+          if (!myName) return true;
+
+          return sellerName.includes(myFirstName) || sellerName.includes(myName) ||
+                 buyerName.includes(myFirstName) || buyerName.includes(myName) ||
+                 (myUsername && (sellerUser === myUsername || buyerUser === myUsername));
+        });
+
+        const threadIds = validThreads.map(t => t.id);
         const { data: msgsData } = await productSupabase
           .from('chat_messages')
           .select('*')
-          .in('thread_id', threadIds)
+          .in('thread_id', threadIds.length > 0 ? threadIds : ['00000000-0000-0000-0000-000000000000'])
           .order('created_at', { ascending: true });
 
-        const formatted = threadsData.map((t) => {
+        const formatted = validThreads.map((t) => {
           const threadMsgs = (msgsData || [])
             .filter((m) => m.thread_id === t.id)
             .map((m) => ({
@@ -40,11 +60,12 @@ export const chatService = {
             id: t.id,
             sellerName: t.seller_name,
             sellerUsername: t.seller_username || t.seller_name,
-            buyerName: t.buyer_name || 'Rizwan',
-            buyerUsername: t.buyer_username || 'rizwan',
+            buyerName: t.buyer_name,
+            buyerUsername: t.buyer_username || t.buyer_name,
             sellerDept: t.seller_dept || 'Campus Member',
             sellerPhone: t.seller_phone || '',
             sellerAvatar: t.seller_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+            buyerAvatar: t.buyer_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
             itemTitle: t.item_title,
             itemPrice: t.item_price,
             itemImage: t.item_image,
@@ -66,9 +87,9 @@ export const chatService = {
     // Fallback to local storage or mock messages
     try {
       const saved = localStorage.getItem(CHATS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : MOCK_MESSAGES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return MOCK_MESSAGES;
+      return [];
     }
   },
 

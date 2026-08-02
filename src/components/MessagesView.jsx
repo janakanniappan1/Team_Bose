@@ -59,8 +59,8 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
     let isMounted = true;
 
     const loadLiveChats = async () => {
-      const liveThreads = await chatService.getChatThreads();
-      if (isMounted && liveThreads && liveThreads.length > 0) {
+      const liveThreads = await chatService.getChatThreads(currentUser);
+      if (isMounted && Array.isArray(liveThreads)) {
         setChatThreads(liveThreads);
       }
     };
@@ -72,7 +72,7 @@ export default function MessagesView({ currentUser, initialChat, onSelectProduct
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, []);
+  }, [currentUser]);
 
   // Sync initialChat prop if passed from outside
   React.useEffect(() => {
