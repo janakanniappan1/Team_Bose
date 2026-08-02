@@ -178,7 +178,7 @@ CREATE POLICY "Allow public insert chat_messages" ON chat_messages FOR INSERT WI
 -- ============================================================
 CREATE TABLE IF NOT EXISTS user_notifications (
   id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  username          TEXT NOT NULL DEFAULT 'Jana K',
+  username          TEXT NOT NULL,
   title             TEXT NOT NULL,
   message           TEXT NOT NULL,
   type              TEXT DEFAULT 'message', -- 'message' | 'sold' | 'price_drop' | 'offer'
