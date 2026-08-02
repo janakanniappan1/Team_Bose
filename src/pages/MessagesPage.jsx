@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { useChat } from '../hooks/useChat';
-import { chatService } from '../services/chatService';
-import { ChatSidebar } from '../components/chat/ChatSidebar';
-import { ChatHeader } from '../components/chat/ChatHeader';
-import { ChatMessages } from '../components/chat/ChatMessages';
-import { MessageInput } from '../components/chat/MessageInput';
+import { uploadChatImage } from '../services/chatService';
+import { ChatSidebar } from '../components/Chat/ChatSidebar';
+import { ChatHeader } from '../components/Chat/ChatHeader';
+import { ChatMessages } from '../components/Chat/ChatMessages';
+import { MessageInput } from '../components/Chat/MessageInput';
 import { MessageSquare, ArrowLeft, ShieldCheck } from 'lucide-react';
+
+// ============================================================
+// MessagesPage — Connects existing UniSwap UI to the new chat engine
+//
+// UI components are NOT changed. Only the data layer is replaced:
+//   - useChat() orchestrates threads, messages, presence, typing
+//   - sendMessage/sendImage use pure UUIDs (no string fallbacks)
+//   - handleMakeOffer uses currentUserId + opponentProfile.id
+// ============================================================
 
 export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenProduct }) {
   const {
@@ -19,11 +28,12 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
     messagesLoading,
     threadsLoading,
     hasMore,
-    loadMoreMessages,
+    loadOlderMessages,
+    sendMessage,
     addOptimisticMessage,
     targetPresence,
     isTargetTyping,
-    handleTyping
+    handleTyping,
   } = useChat(currentUser, initialThreadId);
 
   const [showMobileChat, setShowMobileChat] = useState(!!initialThreadId);
@@ -35,86 +45,52 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
     setShowMobileChat(true);
   };
 
+  // ── Send text message (pure UUID, no string fallbacks) ────
   const handleSendMessage = async (text) => {
-    if (!text || !text.trim()) return;
+    if (!text?.trim()) return;
+    if (!activeThreadId || !currentUserId || !opponentProfile?.id) {
+      console.warn('[MessagesPage] Cannot send — missing threadId, senderId, or receiverId');
+      return;
+    }
 
-    const targetThreadId = activeThreadId || (activeThread ? activeThread.id : 'default-chat');
-    const senderId = currentUserId || currentUser?.username || 'user-1';
-    const receiverId = opponentProfile?.id || opponentProfile?.username || 'receiver-1';
-    const recipientUsername = opponentProfile?.full_name || opponentProfile?.username || 'Campus Student';
-    const tempId = `temp_${Date.now()}`;
-
-    // Optimistic UI message insert
-    const optimisticMsg = {
-      id: tempId,
-      thread_id: targetThreadId,
-      sender_id: senderId,
-      receiver_id: receiverId,
-      sender_username: currentUser?.fullName || currentUser?.username || 'User',
-      message: text.trim(),
-      message_type: 'text',
-      is_seen: false,
-      is_delivered: true,
-      created_at: new Date().toISOString()
-    };
-
-    addOptimisticMessage(optimisticMsg);
-
-    // Send to Supabase DB & notify recipient
-    await chatService.sendMessage({
-      threadId: targetThreadId,
-      senderId: senderId,
-      receiverId: receiverId,
-      senderUsername: currentUser?.fullName || currentUser?.username || 'User',
-      recipientUsername: recipientUsername,
-      message: text.trim(),
-      messageType: 'text'
-    });
+    await sendMessage(text.trim(), 'text');
   };
 
+  // ── Send image message ─────────────────────────────────────
   const handleSendImage = async (imageFile) => {
     if (!imageFile) return;
+    if (!activeThreadId || !currentUserId || !opponentProfile?.id) {
+      console.warn('[MessagesPage] Cannot send image — missing IDs');
+      return;
+    }
 
-    const imageUrl = await chatService.uploadChatImage(imageFile);
+    const imageUrl = await uploadChatImage(imageFile);
     if (!imageUrl) return;
 
-    const targetThreadId = activeThreadId || (activeThread ? activeThread.id : 'default-chat');
-    const senderId = currentUserId || currentUser?.username || 'user-1';
-    const receiverId = opponentProfile?.id || opponentProfile?.username || 'receiver-1';
-    const recipientUsername = opponentProfile?.full_name || opponentProfile?.username || 'Campus Student';
-
-    await chatService.sendMessage({
-      threadId: targetThreadId,
-      senderId: senderId,
-      receiverId: receiverId,
-      senderUsername: currentUser?.fullName || currentUser?.username || 'User',
-      recipientUsername: recipientUsername,
-      message: '📷 Photo',
-      messageType: 'image',
-      imageUrl
-    });
+    await sendMessage('📷 Photo', 'image', { imageUrl });
   };
 
+  // ── Make price offer ───────────────────────────────────────
   const handleMakeOfferSubmit = async () => {
     if (!offerAmount || !activeThreadId || !currentUserId || !opponentProfile?.id) return;
 
-    await chatService.sendMessage({
-      threadId: activeThreadId,
-      senderId: currentUserId,
-      receiverId: opponentProfile.id,
-      message: `Made price offer of ₹${offerAmount}`,
-      messageType: 'offer_card',
-      metadata: {
-        offerAmount,
-        status: 'pending'
+    await sendMessage(
+      `Price offer: ₹${offerAmount}`,
+      'offer_card',
+      {
+        metadata: {
+          offerAmount,
+          status: 'pending',
+        },
       }
-    });
+    );
 
     setOfferModalOpen(false);
     setOfferAmount('');
   };
 
-  if (!currentUser) {
+  // ── Guard: must be logged in ───────────────────────────────
+  if (!currentUser || !currentUserId) {
     return (
       <div className="container py-5 text-center">
         <div className="card glass-panel p-5 max-w-md mx-auto">
@@ -130,14 +106,14 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
   return (
     <div className="messages-page-container py-3 animate-fade-in">
       <div className="container">
-        
+
         {/* Navigation Bar */}
         <div className="d-flex align-items-center justify-content-between mb-3">
           <button className="btn btn-outline btn-sm" onClick={onGoBack}>
             <ArrowLeft size={16} />
             <span>Back to Marketplace</span>
           </button>
-          
+
           <span className="text-muted hide-mobile" style={{ fontSize: '0.82rem' }}>
             🔒 Safe Campus Direct • 100% End-to-End Realtime Messaging
           </span>
@@ -145,7 +121,7 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
 
         {/* Main Workspace Split Card */}
         <div className="chat-split-card card glass-panel shadow-lg overflow-hidden d-flex flex-row" style={{ height: '780px', borderRadius: '16px' }}>
-          
+
           {/* Left Sidebar */}
           <div className={`chat-sidebar-wrapper ${showMobileChat ? 'hide-mobile' : ''}`} style={{ flex: '0 0 340px' }}>
             <ChatSidebar
@@ -166,7 +142,7 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
                   targetPresence={targetPresence}
                   onGoBack={() => setShowMobileChat(false)}
                   onToggleInfo={() => {}}
-                  onCall={() => alert(`Connecting call to ${opponentProfile.full_name}...`)}
+                  onCall={() => alert(`Connecting call to ${opponentProfile.full_name || opponentProfile.username}...`)}
                 />
 
                 <ChatMessages
@@ -175,7 +151,7 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
                   isTargetTyping={isTargetTyping}
                   opponentName={opponentProfile.full_name || opponentProfile.username}
                   hasMore={hasMore}
-                  loadMoreMessages={loadMoreMessages}
+                  loadMoreMessages={loadOlderMessages}
                   loading={messagesLoading}
                 />
 
@@ -187,9 +163,9 @@ export function MessagesPage({ currentUser, initialThreadId, onGoBack, onOpenPro
                 />
               </>
             ) : (
-              /* Instagram Direct Empty Inbox View */
+              /* Empty Inbox View */
               <div className="flex-1 d-flex flex-column align-items-center justify-content-center p-5 text-center">
-                <div 
+                <div
                   className="mb-3 d-flex align-items-center justify-content-center mx-auto"
                   style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#EEF2FF', color: '#C85A32' }}
                 >

@@ -1,46 +1,77 @@
-import { useState, useEffect, useRef } from 'react';
-import { typingService } from '../services/typingService';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  setTypingStatus,
+  fetchTypingStatus,
+  subscribeTyping,
+} from '../services/typingService';
 
-export function useTyping(threadId, currentUserId, targetUserId = null) {
-  const [isTargetTyping, setIsTargetTyping] = useState(false);
+// ============================================================
+// useTyping — Adopted from Project 2 (chatdemo) pattern
+//
+// Features:
+//   - sendTypingNotification(): emit typing=true to DB
+//   - 2-second auto-clear timeout (user stops typing → typing=false)
+//   - Realtime subscription to opponent's typing status
+//   - Initial typing status fetch on mount
+// ============================================================
+
+export function useTyping(threadId, currentUserId, opponentId) {
+  const [isOpponentTyping, setIsOpponentTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
 
-  // Emit typing status with 2s auto-clear timeout
-  const handleTyping = () => {
+  // ── Emit typing event to DB (with auto-clear) ─────────────
+  const sendTypingNotification = useCallback(() => {
     if (!threadId || !currentUserId) return;
 
-    typingService.setTypingStatus(threadId, currentUserId, true);
+    // Emit typing = true
+    setTypingStatus(threadId, currentUserId, true);
 
+    // Clear any existing auto-clear timer
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
+    // Auto clear after 2 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
-      typingService.setTypingStatus(threadId, currentUserId, false);
+      setTypingStatus(threadId, currentUserId, false);
     }, 2000);
-  };
+  }, [threadId, currentUserId]);
 
-  const stopTyping = () => {
+  // Alias for MessagesPage compatibility
+  const handleTyping = sendTypingNotification;
+
+  const stopTyping = useCallback(() => {
     if (!threadId || !currentUserId) return;
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingService.setTypingStatus(threadId, currentUserId, false);
-  };
+    setTypingStatus(threadId, currentUserId, false);
+  }, [threadId, currentUserId]);
 
-  // Subscribe to target user's typing in active thread
+  // ── Subscribe to opponent's typing status ─────────────────
   useEffect(() => {
-    if (!threadId || !targetUserId) {
-      setIsTargetTyping(false);
+    if (!threadId || !opponentId) {
+      setIsOpponentTyping(false);
       return;
     }
 
-    const unsubscribe = typingService.subscribeTyping(threadId, targetUserId, (isTyping) => {
-      setIsTargetTyping(isTyping);
+    // Initial check for opponent typing
+    fetchTypingStatus(threadId, opponentId).then(setIsOpponentTyping);
+
+    // Realtime subscription
+    const unsubscribe = subscribeTyping(threadId, opponentId, (isTyping) => {
+      setIsOpponentTyping(isTyping);
     });
 
     return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       unsubscribe();
     };
-  }, [threadId, targetUserId]);
+  }, [threadId, opponentId]);
 
-  return { isTargetTyping, handleTyping, stopTyping };
+  return {
+    isOpponentTyping,
+    isTargetTyping: isOpponentTyping, // Alias for MessagesPage compatibility
+    sendTypingNotification,
+    handleTyping,
+    stopTyping,
+  };
 }

@@ -1,73 +1,94 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useThreads } from './useThreads';
 import { useRealtimeMessages } from './useRealtimeMessages';
 import { usePresence } from './usePresence';
 import { useTyping } from './useTyping';
 import { threadService } from '../services/threadService';
 
+// ============================================================
+// useChat — Pure UUID-based orchestrator hook
+//
+// Wires together:
+//   useThreads       → sidebar conversation list
+//   useRealtimeMessages → active thread messages
+//   usePresence      → online status for all users
+//   useTyping        → typing indicator for active thread
+//
+// Opponent is resolved ONLY by UUID comparison:
+//   thread.buyer_id === currentUserId → opponent is seller
+//   thread.seller_id === currentUserId → opponent is buyer
+//   opponent profile pre-loaded by threadService.getUserThreads()
+// ============================================================
+
 export function useChat(currentUser, initialThreadId = null) {
-  const currentUserId = currentUser?.id || currentUser?.uuid || currentUser?.username || 'user-guest';
-  const myName = (currentUser?.fullName || currentUser?.username || 'User').toLowerCase().trim();
-  const myFirstName = myName.split(' ')[0];
+  // ── Resolve current user UUID ────────────────────────────
+  // MUST be the UUID from users.id — never fall back to username
+  const currentUserId = currentUser?.id || currentUser?.authId || null;
 
-  const { threads, setThreads, loading: threadsLoading } = useThreads(currentUserId, currentUser);
-  const [activeThreadId, setActiveThreadId] = useState(initialThreadId);
+  const { threads, setThreads, loading: threadsLoading, refreshThreads } = useThreads(currentUserId);
+  const [activeThreadId, setActiveThreadId] = useState(initialThreadId || null);
 
-  // Sync initialThreadId
+  // ── Auto-select initial thread ────────────────────────────
   useEffect(() => {
     if (initialThreadId) {
       setActiveThreadId(initialThreadId);
     } else if (threads.length > 0 && !activeThreadId) {
-      setActiveThreadId(threads[0].id);
+      // Don't auto-select first thread — let user choose
     }
   }, [initialThreadId, threads]);
 
-  const activeThread = threads.find((t) => t.id === activeThreadId) || threads[0] || null;
+  // ── Find active thread object ─────────────────────────────
+  const activeThread = threads.find(t => t.id === activeThreadId) || null;
 
-  // Robust opponent profile resolution (works with UUIDs and username sessions)
-  const getOpponentProfile = (thread) => {
-    if (!thread) return null;
-    if (thread.seller && thread.buyer && (thread.seller.id || thread.buyer.id)) {
-      return thread.buyer_id === currentUserId ? thread.seller : thread.buyer;
+  // ── Resolve opponent profile (pure UUID, pre-loaded by threadService) ──
+  const getOpponentProfile = useCallback((thread) => {
+    if (!thread || !currentUserId) return null;
+
+    // thread.opponent is already resolved by threadService.getUserThreads()
+    if (thread.opponent && thread.opponent.id) {
+      return thread.opponent;
     }
 
-    const sellerName = thread.sellerName || thread.seller_name || 'Jana';
-    const buyerName = thread.buyerName || thread.buyer_name || 'Rizwan Ahamed';
-
-    const isSellerMe = sellerName.toLowerCase().includes(myFirstName) || (thread.seller_id && thread.seller_id === currentUserId);
-
-    let contactName = isSellerMe ? buyerName : sellerName;
-    if (contactName.toLowerCase().includes(myFirstName)) {
-      contactName = myFirstName.includes('jana') ? 'Rizwan Ahamed' : 'Jana';
-    }
-
-    const avatar = isSellerMe 
-      ? (thread.buyerAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80')
-      : (thread.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80');
+    // Fallback: determine from buyer_id/seller_id
+    const isBuyer = thread.buyer_id === currentUserId;
+    const opponentId = isBuyer ? thread.seller_id : thread.buyer_id;
 
     return {
-      id: isSellerMe ? (thread.buyer_id || 'buyer-1') : (thread.seller_id || 'seller-1'),
-      full_name: contactName,
-      username: contactName.toLowerCase().replace(/\s+/g, '_'),
-      avatar_url: avatar
+      id: opponentId || null,
+      username: 'User',
+      full_name: 'Campus User',
+      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${opponentId}`,
     };
-  };
+  }, [currentUserId]);
 
   const opponentProfile = getOpponentProfile(activeThread);
-  const targetUserId = opponentProfile?.id || null;
+  const opponentId = opponentProfile?.id || null;
 
+  // ── Messages for active thread ────────────────────────────
   const {
     messages,
     loading: messagesLoading,
+    loadingOlder,
     hasMore,
-    loadMoreMessages,
-    addOptimisticMessage
-  } = useRealtimeMessages(activeThreadId, currentUserId);
+    sending,
+    sendMessage,
+    loadOlderMessages,
+    addOptimisticMessage,
+    refreshMessages,
+  } = useRealtimeMessages(activeThreadId, currentUserId, opponentId);
 
-  const targetPresence = usePresence(currentUserId, targetUserId);
-  const { isTargetTyping, handleTyping, stopTyping } = useTyping(activeThreadId, currentUserId, targetUserId);
+  // ── Presence (global map) ─────────────────────────────────
+  const { presenceMap, getPresenceForUser } = usePresence(currentUserId);
+  const targetPresence = getPresenceForUser(opponentId);
 
-  // Reset unread count when switching active conversation
+  // ── Typing indicator ──────────────────────────────────────
+  const { isTargetTyping, handleTyping, stopTyping } = useTyping(
+    activeThreadId,
+    currentUserId,
+    opponentId
+  );
+
+  // ── Reset unread count when switching conversations ───────
   useEffect(() => {
     if (activeThreadId && currentUserId) {
       threadService.resetUnreadCount(activeThreadId, currentUserId);
@@ -77,6 +98,7 @@ export function useChat(currentUser, initialThreadId = null) {
   return {
     currentUserId,
     threads,
+    setThreads,
     activeThread,
     activeThreadId,
     setActiveThreadId,
@@ -84,12 +106,19 @@ export function useChat(currentUser, initialThreadId = null) {
     messages,
     messagesLoading,
     threadsLoading,
+    loadingOlder,
     hasMore,
-    loadMoreMessages,
+    sending,
+    sendMessage,
+    loadOlderMessages,
     addOptimisticMessage,
+    refreshMessages,
+    presenceMap,
     targetPresence,
+    getPresenceForUser,
     isTargetTyping,
     handleTyping,
-    stopTyping
+    stopTyping,
+    refreshThreads,
   };
 }

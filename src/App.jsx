@@ -50,7 +50,7 @@ export default function App() {
   const { wishlist, toggleWishlist, isWishlisted } = useWishlist();
   const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, savedSearches, removeSavedSearch, renameSavedSearch } = useSearch();
   const { notifications, unreadCount, markAllRead, clearAll } = useNotifications(currentUser);
-  const { chats, activeChat, setActiveChat, sendMessage, startChatWithSeller } = useChats();
+  const { activeChat, setActiveChat, startChatWithSeller } = useChats();
 
   // Restore session on page load (check if user was already logged in)
   useEffect(() => {
@@ -184,19 +184,26 @@ export default function App() {
     navigateToView('search', { query: term, category });
   };
 
-  // Start Chat handler (with 100% ID-based Self-Chat Guard)
+  // Start Chat handler — UUID-based self-chat guard
   const handleStartChat = async (product) => {
-    const myId = String(currentUser?.id || currentUser?.username || '').toLowerCase();
-    const sellerId = String(product?.sellerId || product?.sellerUsername || product?.sellerName || '').toLowerCase();
+    // Use UUID for identity comparison — never username strings
+    const myId = currentUser?.id || currentUser?.authId;
+    const sellerId = product?.sellerId || product?.seller_id;
 
+    // Self-chat guard: compare UUIDs
     if (myId && sellerId && myId === sellerId) {
-      showToast('⚠️ You cannot chat with yourself.', 'info');
+      showToast('⚠️ This is your own listing. You cannot chat with yourself.', 'info');
+      return;
+    }
+
+    if (!myId) {
+      showToast('Please log in to start a chat.', 'info');
       return;
     }
 
     try {
       const thread = await startChatWithSeller(product, currentUser);
-      navigateToView('messages', { chatId: thread?.id || 'chat-1' });
+      navigateToView('messages', { chatId: thread?.id });
       showToast(`Opening chat regarding ${product.title}...`, 'info');
     } catch (err) {
       showToast(err.message || 'Unable to open chat.', 'info');

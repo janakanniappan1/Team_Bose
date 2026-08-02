@@ -1,32 +1,37 @@
 import { useState, useEffect } from 'react';
 import { notificationService } from '../services/notificationService';
 
+// ============================================================
+// useNotifications — Updated to pass user.id (UUID) instead of username
+// ============================================================
+
 export function useNotifications(currentUser) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Use UUID for notification filtering — falls back gracefully for guests
+  const userId = currentUser?.id || currentUser?.authId || null;
+
   const fetchNotifs = async () => {
-    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
-    const data = await notificationService.getNotifications(userIdentifier);
+    const data = await notificationService.getNotifications(userId);
     setNotifications(data);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 3000);
+    // Poll every 10s (reduced from 3s to lower DB load)
+    const interval = setInterval(fetchNotifs, 10000);
     return () => clearInterval(interval);
-  }, [currentUser?.fullName, currentUser?.username]);
+  }, [userId]);
 
   const markAllRead = async () => {
-    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
-    const updated = await notificationService.markAllAsRead(userIdentifier);
+    const updated = await notificationService.markAllAsRead(userId);
     setNotifications(updated);
   };
 
   const clearAll = async () => {
-    const userIdentifier = currentUser?.fullName || currentUser?.username || 'User';
-    const updated = await notificationService.clearAllNotifications(userIdentifier);
+    const updated = await notificationService.clearAllNotifications(userId);
     setNotifications(updated);
   };
 
@@ -35,7 +40,7 @@ export function useNotifications(currentUser) {
     await fetchNotifs();
   };
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const unreadCount = notifications.filter(n => n.unread).length;
 
   return {
     notifications,
@@ -44,7 +49,6 @@ export function useNotifications(currentUser) {
     markAllRead,
     clearAll,
     addNotification,
-    refreshNotifications: fetchNotifs
+    refreshNotifications: fetchNotifs,
   };
 }
-

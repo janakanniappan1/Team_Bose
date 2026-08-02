@@ -1,95 +1,193 @@
-import { useState, useEffect, useRef } from 'react';
-import { chatService } from '../services/chatService';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { getThreadMessages, sendChatMessage, markMessagesAsSeen } from '../services/chatService';
 import { productSupabase } from '../lib/supabase';
 
-export function useRealtimeMessages(threadId, currentUserId) {
-  const [messages, setMessages] = useState(() => {
-    if (!threadId) return [];
-    try {
-      const saved = localStorage.getItem(`uniswap_msgs_${threadId}`);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+// ============================================================
+// useRealtimeMessages — Adopted from Project 2 (chatdemo)
+//
+// Features:
+//   - Load 30 messages on init (paginated)
+//   - Optimistic UI: message appears instantly, replaced by real msg
+//   - Realtime INSERT subscription (filtered by thread_id — critical!)
+//   - Realtime UPDATE subscription (for seen/delivered status)
+//   - Auto mark-as-seen when receiver opens thread
+//   - Infinite scroll: load older messages
+//   - Duplicate prevention via ID and isOptimistic matching
+// ============================================================
 
-  // Load and merge messages from Supabase DB
-  useEffect(() => {
+export function useRealtimeMessages(threadId, currentUserId, receiverId) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [sending, setSending] = useState(false);
+
+  // Keep ref to avoid stale closures in realtime callbacks
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
+  // ── Load initial messages ─────────────────────────────────
+  const loadInitialMessages = useCallback(async () => {
     if (!threadId) {
       setMessages([]);
       setLoading(false);
       return;
     }
 
-    let isMounted = true;
     setLoading(true);
-
-    // Initial load from localStorage
     try {
-      const saved = localStorage.getItem(`uniswap_msgs_${threadId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.length > 0) setMessages(parsed);
+      const data = await getThreadMessages(threadId, 30);
+      setMessages(data);
+      setHasMore(data.length === 30);
+
+      // Auto mark received messages as seen
+      if (currentUserId) {
+        await markMessagesAsSeen(threadId, currentUserId);
       }
-    } catch (e) {
-      console.warn('[useRealtimeMessages] local cache read error:', e);
+    } catch (err) {
+      console.error('[useRealtimeMessages] loadInitialMessages error:', err);
+    } finally {
+      setLoading(false);
     }
+  }, [threadId, currentUserId]);
 
-    // Fetch latest messages from Supabase DB
-    chatService.getMessages(threadId, 50).then((data) => {
-      if (isMounted) {
-        setMessages((prev) => {
-          const combined = [...prev, ...(data || [])];
-          const uniqueMap = new Map();
-          combined.forEach((msg) => {
-            const key = msg.id || `${msg.sender_id || msg.sender}_${msg.message || msg.text}_${msg.created_at || msg.time}`;
-            if (!uniqueMap.has(key)) {
-              uniqueMap.set(key, msg);
-            }
-          });
-          const result = Array.from(uniqueMap.values());
-          try {
-            localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(result));
-          } catch {}
-          return result;
-        });
+  // ── Load older messages (infinite scroll upward) ──────────
+  const loadOlderMessages = useCallback(async () => {
+    if (!threadId || loadingOlder || !hasMore || messages.length === 0) return;
 
-        setLoading(false);
-        setHasMore((data || []).length >= 50);
+    setLoadingOlder(true);
+    try {
+      const oldestTimestamp = messages[0].created_at;
+      const olderData = await getThreadMessages(threadId, 30, oldestTimestamp);
 
-        if (currentUserId) {
-          chatService.markMessagesAsSeen(threadId, currentUserId);
-        }
-      }
+      if (olderData.length < 30) setHasMore(false);
+
+      setMessages(prev => {
+        // Deduplicate
+        const existingIds = new Set(prev.map(m => m.id));
+        const newOlder = olderData.filter(m => !existingIds.has(m.id));
+        return [...newOlder, ...prev];
+      });
+    } catch (err) {
+      console.error('[useRealtimeMessages] loadOlderMessages error:', err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [threadId, loadingOlder, hasMore, messages]);
+
+  // ── Optimistic UI: add a temporary message ─────────────────
+  const addOptimisticMessage = useCallback((tempMsg) => {
+    setMessages(prev => {
+      const exists = prev.some(m => m.id === tempMsg.id);
+      if (exists) return prev;
+      return [...prev, tempMsg];
     });
+  }, []);
 
-    // Supabase Realtime channel subscription for instant zero-refresh message delivery
+  // ── Replace optimistic message with real DB message ────────
+  const confirmOptimisticMessage = useCallback((tempId, realMsg) => {
+    setMessages(prev =>
+      prev.map(m => (m.id === tempId ? { ...realMsg, isOptimistic: false } : m))
+    );
+  }, []);
+
+  // ── Mark optimistic message as failed ─────────────────────
+  const failOptimisticMessage = useCallback((tempId) => {
+    setMessages(prev =>
+      prev.map(m => (m.id === tempId ? { ...m, isFailed: true } : m))
+    );
+  }, []);
+
+  // ── Send message with optimistic UI ──────────────────────
+  const handleSendMessage = useCallback(async (text, messageType = 'text', extraPayload = {}) => {
+    if (!threadId || !currentUserId || !receiverId) return;
+    if (messageType === 'text' && !text?.trim()) return;
+
+    const tempId = `temp_${Date.now()}_${Math.random()}`;
+    const tempMessage = {
+      id: tempId,
+      thread_id: threadId,
+      sender_id: currentUserId,
+      receiver_id: receiverId,
+      message: text?.trim() || (messageType === 'image' ? '📷 Photo' : 'Message'),
+      message_type: messageType,
+      image_url: extraPayload.imageUrl || null,
+      metadata: extraPayload.metadata || {},
+      is_seen: false,
+      is_delivered: true,
+      created_at: new Date().toISOString(),
+      isOptimistic: true,
+    };
+
+    addOptimisticMessage(tempMessage);
+    setSending(true);
+
+    try {
+      const sentMessage = await sendChatMessage({
+        threadId,
+        senderId: currentUserId,
+        receiverId,
+        message: text,
+        messageType,
+        imageUrl: extraPayload.imageUrl || null,
+        metadata: extraPayload.metadata || {},
+      });
+
+      confirmOptimisticMessage(tempId, sentMessage);
+    } catch (err) {
+      console.error('[useRealtimeMessages] sendMessage error:', err);
+      failOptimisticMessage(tempId);
+    } finally {
+      setSending(false);
+    }
+  }, [threadId, currentUserId, receiverId, addOptimisticMessage, confirmOptimisticMessage, failOptimisticMessage]);
+
+  // ── Realtime subscriptions ────────────────────────────────
+  useEffect(() => {
+    loadInitialMessages();
+    if (!threadId) return;
+
+    let isMounted = true;
+
+    // Subscribe to NEW messages in THIS thread only (thread_id filter is critical)
     const channel = productSupabase
-      .channel(`messages_${threadId}`)
+      .channel(`realtime:messages:${threadId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'chat_messages'
+          table: 'chat_messages',
+          filter: `thread_id=eq.${threadId}`,
         },
         (payload) => {
-          if (payload.new && isMounted) {
-            setMessages((prev) => {
-              const exists = prev.some((m) => m.id === payload.new.id || (m.message === payload.new.message && m.sender_id === payload.new.sender_id));
-              if (exists) return prev;
-              const updated = [...prev, payload.new];
-              try {
-                localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
-              } catch {}
-              return updated;
-            });
+          const newMsg = payload.new;
+          if (!newMsg || !isMounted) return;
 
-            if (currentUserId && payload.new.receiver_id === currentUserId) {
-              chatService.markMessagesAsSeen(threadId, currentUserId);
+          setMessages(prev => {
+            // Replace optimistic message if it matches (same sender + message content)
+            const optimisticIdx = prev.findIndex(
+              m => m.isOptimistic &&
+                   m.sender_id === newMsg.sender_id &&
+                   m.message === newMsg.message &&
+                   m.message_type === newMsg.message_type
+            );
+            if (optimisticIdx !== -1) {
+              const updated = [...prev];
+              updated[optimisticIdx] = { ...newMsg, isOptimistic: false };
+              return updated;
             }
+
+            // Check for exact duplicate by ID
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+
+            // It's a genuinely new message from the other user
+            return [...prev, newMsg];
+          });
+
+          // If receiver is currently viewing, mark as seen immediately
+          if (newMsg.receiver_id === currentUserId) {
+            markMessagesAsSeen(threadId, currentUserId);
           }
         }
       )
@@ -98,18 +196,16 @@ export function useRealtimeMessages(threadId, currentUserId) {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'chat_messages'
+          table: 'chat_messages',
+          filter: `thread_id=eq.${threadId}`,
         },
         (payload) => {
-          if (payload.new && isMounted) {
-            setMessages((prev) => {
-              const updated = prev.map((m) => (m.id === payload.new.id ? payload.new : m));
-              try {
-                localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
-              } catch {}
-              return updated;
-            });
-          }
+          const updatedMsg = payload.new;
+          if (!updatedMsg || !isMounted) return;
+
+          setMessages(prev =>
+            prev.map(m => (m.id === updatedMsg.id ? { ...m, ...updatedMsg } : m))
+          );
         }
       )
       .subscribe();
@@ -118,34 +214,17 @@ export function useRealtimeMessages(threadId, currentUserId) {
       isMounted = false;
       productSupabase.removeChannel(channel);
     };
-  }, [threadId, currentUserId]);
+  }, [threadId, currentUserId, loadInitialMessages]);
 
-  // Load older messages (Infinite Scroll)
-  const loadMoreMessages = async () => {
-    if (!threadId || loading || !hasMore || messages.length === 0) return;
-    const oldestTimestamp = messages[0].created_at;
-    const olderMsgs = await chatService.getMessages(threadId, 30, oldestTimestamp);
-    if (olderMsgs.length < 30) setHasMore(false);
-    setMessages((prev) => {
-      const combined = [...olderMsgs, ...prev];
-      const uniqueMap = new Map();
-      combined.forEach((m) => uniqueMap.set(m.id, m));
-      return Array.from(uniqueMap.values());
-    });
+  return {
+    messages,
+    loading,
+    loadingOlder,
+    hasMore,
+    sending,
+    sendMessage: handleSendMessage,
+    loadOlderMessages,
+    addOptimisticMessage,
+    refreshMessages: loadInitialMessages,
   };
-
-  // Optimistic UI append (Permanent insert)
-  const addOptimisticMessage = (newMsg) => {
-    setMessages((prev) => {
-      const exists = prev.some((m) => m.id === newMsg.id || (m.message === newMsg.message && m.sender_id === newMsg.sender_id));
-      if (exists) return prev;
-      const updated = [...prev, newMsg];
-      try {
-        localStorage.setItem(`uniswap_msgs_${threadId}`, JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-  };
-
-  return { messages, loading, hasMore, loadMoreMessages, addOptimisticMessage };
 }

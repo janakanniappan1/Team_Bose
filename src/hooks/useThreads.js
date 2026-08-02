@@ -1,46 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { threadService } from '../services/threadService';
 import { productSupabase } from '../lib/supabase';
 
-export function useThreads(currentUserId, currentUser = null) {
+// ============================================================
+// useThreads — Adopted from Project 2 (chatdemo) pattern
+//
+// Features:
+//   - Load all threads for current user on mount
+//   - Realtime subscription to chat_threads AND chat_messages
+//     so sidebar reorders instantly when new messages arrive
+//   - Expose refreshThreads for manual refresh
+// ============================================================
+
+export function useThreads(currentUserId) {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const loadThreads = useCallback(async () => {
+    if (!currentUserId) {
+      setThreads([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = await threadService.getUserThreads(currentUserId);
+      setThreads(data);
+    } catch (err) {
+      console.error('[useThreads] loadThreads error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUserId]);
+
   useEffect(() => {
-    let isMounted = true;
+    loadThreads();
+    if (!currentUserId) return;
 
-    // Initial fetch
-    threadService.getThreads(currentUserId, currentUser).then((data) => {
-      if (isMounted) {
-        setThreads(data);
-        setLoading(false);
-      }
-    });
-
-    // Real-time subscription to chat_threads
+    // Subscribe to thread updates (last_message, unread counts, reorder)
     const channel = productSupabase
-      .channel(`user_threads_${currentUserId || 'all'}`)
+      .channel(`threads:user:${currentUserId}`)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chat_threads'
-        },
-        async () => {
-          const updated = await threadService.getThreads(currentUserId, currentUser);
-          if (isMounted) {
-            setThreads(updated);
-          }
+        { event: '*', schema: 'public', table: 'chat_threads' },
+        () => {
+          loadThreads();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        () => {
+          // A new message was sent — refresh threads to reorder sidebar
+          loadThreads();
         }
       )
       .subscribe();
 
     return () => {
-      isMounted = false;
       productSupabase.removeChannel(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, loadThreads]);
 
-  return { threads, setThreads, loading };
+  return {
+    threads,
+    setThreads,
+    loading,
+    refreshThreads: loadThreads,
+  };
 }

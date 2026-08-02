@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Read Supabase credentials from .env (Vite exposes vars prefixed with VITE_)
+// ── Database 1: Authentication (users table) ─────────────────
+// Project: jumprmlmxzwxsabjvgtd
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Check if the credentials look real (not placeholder values)
 const isConfigured = Boolean(
   supabaseUrl &&
   supabaseAnonKey &&
@@ -18,18 +18,22 @@ if (!isConfigured) {
   );
 }
 
-// Create and export the main Supabase client (Database 1 - Auth)
 export const supabase = createClient(
   isConfigured ? supabaseUrl : 'https://placeholder.supabase.co',
   isConfigured ? supabaseAnonKey : 'placeholder-key'
 );
 
-// Create and export Database 2 Supabase client for Product Sales (user_imagesss)
+// ── Database 2: Products + Chat (all chat tables live here) ──
+// Project: drqieumjptfmzhizjzge
 const PRODUCT_DB_URL = 'https://drqieumjptfmzhizjzge.supabase.co';
 const PRODUCT_DB_KEY = 'sb_publishable_mCSK_djyZveTJsS4NLuKlw_0SNRIHq0';
 
-export const productSupabase = createClient(PRODUCT_DB_URL, PRODUCT_DB_KEY);
+export const productSupabase = createClient(PRODUCT_DB_URL, PRODUCT_DB_KEY, {
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+});
 
-// Export helper so other files can check if Supabase is properly configured
 export const isSupabaseConfigured = () => isConfigured;
-
